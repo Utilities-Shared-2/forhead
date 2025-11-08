@@ -3,7 +3,7 @@ import cv2
 
 def draw_largest_box(image, boxes, scores):
     if len(boxes) == 0:
-        return image
+        return image, None
 
     num_boxes = boxes.shape[0]
 
@@ -47,3 +47,10 @@ def draw_largest_box(image, boxes, scores):
 
     #returns the image and ((x_min, y_min), (x_max, y_max))
     return image, ((box[0], box[1]), (box[2], box[3]))
+
+
+class Camera_Movement():
+    def __init__(self):
+        pass
+    def move(self):
+        pass

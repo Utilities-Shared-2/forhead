@@ -68,11 +68,11 @@ def non_max_suppression(boxes, overlapThresh):
     # return only the bounding boxes that were picked
     return boxes[pick], pick
 
-def put_text_on_image(image, text, color=(255, 255, 255)):
+def put_text_on_image(image, text, position, color=(255, 255, 255)):
     font = cv2.FONT_HERSHEY_SIMPLEX
     font_scale = 1
     thickness = 2
-    position = (10, 50)  # top left corner position
+    # position = (10, 50)  # top left corner position
 
     # Add the text to the image
     cv2.putText(image, text, position, font, font_scale, color, thickness)
