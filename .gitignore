@@ -1,1 +1,4 @@
-venv
+.venv
+.qodo
+.DS_Store
+.idea
