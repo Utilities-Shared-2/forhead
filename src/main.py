@@ -5,6 +5,7 @@ import numpy as np
 
 from recognition import FaceDetector
 import utils
+import app
 
 def main():
     print("hi")
@@ -29,9 +30,15 @@ def main():
         fps = 1.0 / (end_time - start_time)
         fps_cum += fps
         fps_avg = fps_cum / n_frames
+
+
+        # frame = utils.draw_boxes_with_scores(frame, bboxes, scores)
+
+        frame, rectangle = app.draw_largest_box(frame, bboxes, scores)
+        
         
 
-        frame = utils.draw_boxes_with_scores(frame, bboxes, scores)
+        frame = utils.put_text_on_image(frame, text='FPS: {:.2f}'.format( fps_avg ))
 
 
         cv2.imshow('frame', frame)
@@ -46,8 +53,8 @@ def main():
 
     
 
-    cv2.release
-    cv2.destroyAllWindows
+    cv2.release()
+    cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":
