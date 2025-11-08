@@ -1,5 +1,7 @@
 import numpy as np
 import cv2
+import RPi.GPIO as GPIO
+
 
 def draw_largest_box(image, boxes, scores):
     if len(boxes) == 0:
@@ -49,8 +51,25 @@ def draw_largest_box(image, boxes, scores):
     return image, ((box[0], box[1]), (box[2], box[3]))
 
 
-class Camera_Movement():
-    def __init__(self):
+#midpoint of the face box and the size of the frame
+def center(midpoint, size):
+    x_mid = size[0]
+    y_mid = size[1]
+
+    x = midpoint[0]
+    y = midpoint[1]
+    
+    #we only rotate by a tiny bit. we can probably just recursively call it until it's centered
+    #the left right rotation might be wrong cuz mirroring
+    if (x > x_mid):
+        #rotate_left()
         pass
-    def move(self):
+    elif (x < x_mid):
+        #rotate_right()
+        pass
+    if (y > y_mid):
+        #rotate_up()
+        pass
+    elif (y < y_mid):
+        #rotate_down()
         pass

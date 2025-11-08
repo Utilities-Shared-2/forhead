@@ -38,6 +38,7 @@ def main():
         # frame = utils.draw_boxes_with_scores(frame, bboxes, scores)
 
         frame, rectangle = app.draw_largest_box(frame, bboxes, scores)
+        midpoint = None
         if rectangle:
             (a,b),(c,d) = rectangle
             midpoint = (a+(c-a)//2, b+(d-b)//2)
@@ -54,6 +55,8 @@ def main():
 
         # print("hi")
 
+
+        app.center(midpoint, frame.shape[:2])
 
         k = cv2.waitKey(1) & 0xFF#copied straight from another repo. not sure why they used 0xff. maybe to extract just the ascii bytes
         if k == 27 or k == ord('q'):
