@@ -6,22 +6,22 @@ class IoControl:
     def __init__(self):
         # PWM signal .5ms  = 0, 2.5ms = 270
         GPIO.setmode(GPIO.BOARD)
-        GPIO.setup(37, GPIO.IN)  # Flip Switch
+        # GPIO.setup(37, GPIO.IN)  # Flip Switch unused, weird signals
         GPIO.setup(11, GPIO.OUT)  # Base motor(pin32)
         GPIO.setup(13, GPIO.OUT)  # Camera motor (pin33)
 
-
         self.base = GPIO.PWM(11, 50)
         self.camera = GPIO.PWM(13, 50)
+        self.camera_angle = 270
+        self.base_angle = 270
         self.base.start(0)
         self.camera.start(0)
-        self.base.ChangeDutyCycle(7.5) #initalize the position to be 135 deg
-        self.camera.ChangeDutyCycle(7.5)
+        self.base.ChangeDutyCycle(1) #initalize the position to be 135 deg
+        self.camera.ChangeDutyCycle(1)
         time.sleep(1)
         self.base.stop()
         self.camera.stop()
-        self.camera_angle = 135
-        self.base_angle = 135
+
 
 
     def degrees_to_duty_cycle(self, degrees):

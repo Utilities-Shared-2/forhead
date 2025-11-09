@@ -83,8 +83,8 @@ def main():
             midpoint = (a+(c-a)//2, b+(d-b)//2)
             midpoint = (int(midpoint[0]), int(midpoint[1]))
             frame = utils.put_text_on_image(frame, position=(10, 150), text=f"midpoint{midpoint}")
-            if (io.getToggledStatus()):
-                center(midpoint, frame.shape[:2])#i don't think order reall matters here with this line
+            # if (io.getToggledStatus()):
+            center(midpoint, frame.shape[:2])
         frame = utils.put_text_on_image(frame, position=(10,50), text='FPS: {:.2f}'.format( fps_avg ))
 
         cv2.imshow('frame', frame)
@@ -94,6 +94,7 @@ def main():
             break
     cv2.release()
     cv2.destroyAllWindows()
+
 
 
 if __name__ == "__main__":
