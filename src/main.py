@@ -5,7 +5,7 @@ import numpy as np
 
 from recognition import FaceDetector
 import utils
-import app
+import framebox as app
 import io_control
 
 io = io_control.io_control()
