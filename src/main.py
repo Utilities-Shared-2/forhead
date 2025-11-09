@@ -1,7 +1,6 @@
 import cv2
 import time
-from openvino.runtime import Core
-import numpy as np
+
 
 from recognition import FaceDetector
 import utils
@@ -41,7 +40,7 @@ def center(midpoint, size):
         pass
     # print("camera angle")
     # print(io.getCameraAngle())
-    time.sleep(.2)
+    # time.sleep(.2)
 
 
 def main():

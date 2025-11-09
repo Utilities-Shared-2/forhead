@@ -3,7 +3,7 @@ import time
 import subprocess
 
 class IoControl:
-    defaultInc = 5
+    defaultInc = 2
     def __init__(self):
         # --- Auto-start pigpiod if it's not running ---
         if not self._is_pigpiod_running():
@@ -14,7 +14,7 @@ class IoControl:
         # Connect to pigpiod daemon
         self.pi = pigpio.pi()
         if not self.pi.connected:
-            raise IOError("Could not connect to pigpiod. Make sure it’s running with: sudo pigpiod")
+            raise IOError("[Warning] Could not connect to pigpiod. Make sure it’s running with: sudo pigpiod")
 
         # GPIO pin numbers (BOARD → BCM conversion if needed)
         # BOARD 11 → BCM 17
@@ -35,11 +35,10 @@ class IoControl:
         # self.pi.set_pull_up_down(self.switch_pin, pigpio.PUD_OFF)
 
         # Initialize positions
+        print("[INFO] initalizing servo position")
         self.set_servo_pulsewidth(self.base_pin, self.degrees_to_pulsewidth(self.camera_angle))
         self.set_servo_pulsewidth(self.camera_pin, self.degrees_to_pulsewidth(self.base_angle))
         time.sleep(1)
-
-
 
     # ------------------------
     # Helper methods
