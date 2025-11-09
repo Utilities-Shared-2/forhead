@@ -31,11 +31,11 @@ def center(midpoint, size):
     # print("base angle")
     # print(io.getBaseAngle())
     # time.sleep(1)
-    if y > y_mid:
+    if y < y_mid:
         io.rotate_up()
         print("rotate up",end=" ")
         pass
-    elif y < y_mid:
+    elif y > y_mid:
         io.rotate_down()
         print("rotate down",end=" ")
         pass
