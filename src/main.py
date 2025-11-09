@@ -22,19 +22,19 @@ def center(midpoint, size):
     
     #we only rotate by a tiny bit. we can probably just recursively call it until it's centered
     #the left right rotation might be wrong cuz mirroring
-    if (x < x_mid):
+    if (x > x_mid):
         io.moveLeftInc(0.5)
         print("rotate left", end = " ")
         pass
-    elif (x > x_mid):
+    elif (x < x_mid):
         io.moveRightInc(0.5)
         print("rotate right", end = " ")
         pass
-    if (y < y_mid):
+    if (y > y_mid):
         io.moveUpInc(0.5)
         print("rotate up")
         pass
-    elif (y > y_mid):
+    elif (y < y_mid):
         io.moveDownInc(0.5)
         print("rotate down")
         pass
