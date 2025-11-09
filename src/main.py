@@ -6,9 +6,9 @@ import numpy as np
 from recognition import FaceDetector
 import utils
 import framebox as app
-from io_control import Io_Control
+from io_control import IoControl
 
-io = Io_Control()
+io = IoControl()
 
 
 #midpoint of the face box and the size of the frame
@@ -18,27 +18,25 @@ def center(midpoint, size):
 
     x = midpoint[0]
     y = midpoint[1]
-    print(y)
-    
+
     #we only rotate by a tiny bit. we can probably just recursively call it until it's centered
     #the left right rotation might be wrong cuz mirroring
-    if (x > x_mid):
+    if (x < x_mid):
         io.moveLeftInc(0.5)
         print("rotate left", end = " ")
         pass
-    elif (x < x_mid):
+    elif (x > x_mid):
         io.moveRightInc(0.5)
         print("rotate right", end = " ")
         pass
-    if (y > y_mid):
+    if (y < y_mid):
         io.moveUpInc(0.5)
         print("rotate up")
         pass
-    elif (y < y_mid):
+    elif (y > y_mid):
         io.moveDownInc(0.5)
         print("rotate down")
         pass
-    time.sleep(1)
 
 
 def main():
