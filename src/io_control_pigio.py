@@ -1,10 +1,16 @@
 import pigpio
 import time
-
+import subprocess
 
 class IoControl:
     defaultInc = 0.1
     def __init__(self):
+        # --- Auto-start pigpiod if it's not running ---
+        if not self._is_pigpiod_running():
+            print("[INFO] pigpiod not detected, starting daemon...")
+            self._start_pigpiod()
+            time.sleep(0.5)  # small delay for it to initialize
+
         # Connect to pigpiod daemon
         self.pi = pigpio.pi()
         if not self.pi.connected:
@@ -33,6 +39,25 @@ class IoControl:
         self.set_servo_pulsewidth(self.camera_pin, self.degrees_to_pulsewidth(self.base_angle))
         time.sleep(1)
 
+
+
+    # ------------------------
+    # Helper methods
+    # ------------------------
+    def _is_pigpiod_running(self):
+        """Check if pigpiod process is running."""
+        try:
+            output = subprocess.check_output(["pgrep", "pigpiod"])
+            return bool(output.strip())
+        except subprocess.CalledProcessError:
+            return False
+
+    def _start_pigpiod(self):
+        """Start the pigpio daemon using sudo."""
+        try:
+            subprocess.run(["sudo", "pigpiod"], check=True)
+        except Exception as e:
+            raise RuntimeError(f"Failed to start pigpiod: {e}")
 
     @staticmethod
     def degrees_to_pulsewidth(degrees):
