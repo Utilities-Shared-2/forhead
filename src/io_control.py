@@ -9,7 +9,7 @@ def __init__():
     global base, camera
     # PWM signal .5ms  = 0, 2.5ms = 270
     GPIO.setmode(GPIO.BOARD)
-    GPIO.setup(37, GPIO.OUT)  # Flip Switch
+    GPIO.setup(37, GPIO.IN)  # Flip Switch
     GPIO.setup(32, GPIO.OUT)  # Base motor(pin32)
     GPIO.setup(33, GPIO.OUT)  # Camera motor (pin33)
     base = GPIO.PWM(12, 50)
@@ -104,3 +104,9 @@ def getBaseAngle():
 def getCameraAngle():
     global camera_angle
     return camera_angle
+
+def getToggledStatus():
+    if GPIO.input(37) == GPIO.HIGH:
+        return True
+    else:
+        return False
