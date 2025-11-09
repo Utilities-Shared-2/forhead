@@ -43,9 +43,9 @@ class io_control:
         degrees = max(0, min(270, degrees))
         # Convert degrees to duty cycle (0.5ms to 2.5ms for 0-270 degrees at 50Hz)
         # 50Hz = 20ms period
-        # duty_cycle = (0.5 + (degrees * 2 / 270)) / 20 * 100
+        duty_cycle = (0.5 + (degrees * 2 / 270)) / 20 * 100
         # Simplified formula:
-        duty_cycle = 2.5 + (degrees * 10 / 270)
+        #duty_cycle = (2.5 + (degrees * 10 / 270)
         return duty_cycle
 
 
