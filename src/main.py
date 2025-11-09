@@ -6,9 +6,9 @@ import numpy as np
 from recognition import FaceDetector
 import utils
 import framebox as app
-from src.io_control import io_control
+from src.io_control import Io_Control
 
-io = io_control()
+io = Io_Control()
 
 
 #midpoint of the face box and the size of the frame

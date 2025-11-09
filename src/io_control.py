@@ -7,7 +7,7 @@ import time
 #base = None
 #camera = None
 
-class io_control:
+class Io_Control:
     def __init__(self):
         # PWM signal .5ms  = 0, 2.5ms = 270
         GPIO.setmode(GPIO.BOARD)
