@@ -82,7 +82,7 @@ def main():
             
             
             if (io.getToggledStatus()):
-                app.center(midpoint, frame.shape[:2])#i don't think order reall matters here with this line
+                center(midpoint, frame.shape[:2])#i don't think order reall matters here with this line
 
 
         # print(midpoint)

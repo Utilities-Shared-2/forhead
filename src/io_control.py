@@ -51,7 +51,7 @@ class io_control:
             base_angle += 0.1
         return
 
-    def moveRight(self, inc):
+    def moveRightInc(self, inc):
         global base_angle
         if base_angle <= 270:
             base.ChangeDutyCycle(self.degrees_to_duty_cycle(base_angle + inc))
@@ -65,7 +65,7 @@ class io_control:
             base_angle -= 0.1
         return
 
-    def moveLeft(self, inc):
+    def moveLeftInc(self, inc):
         global base_angle
         if base_angle >= 0:
             base.ChangeDutyCycle(self.degrees_to_duty_cycle(base_angle - inc))
@@ -79,7 +79,7 @@ class io_control:
             camera_angle += 0.1
         return
 
-    def moveUp(self, inc):
+    def moveUpInc(self, inc):
         global camera_angle
         if camera_angle <=270:
             camera.ChangeDutyCycle(self.degrees_to_duty_cycle(camera_angle+inc))
@@ -93,7 +93,7 @@ class io_control:
             camera_angle -= 0.1
         return
 
-    def moveDown(self, inc):
+    def moveDownInc(self, inc):
         global camera_angle
         if camera_angle >= 0:
             camera.ChangeDutyCycle(self.degrees_to_duty_cycle(camera_angle-inc))
