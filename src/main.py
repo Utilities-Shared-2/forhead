@@ -20,24 +20,23 @@ def center(midpoint, size):
     y = midpoint[1]
 
     #we only rotate by a tiny bit. we can probably just recursively call it until it's centered
-    #the left right rotation might be wrong cuz mirroring
-    if (x < x_mid):
-        io.moveLeft()
+    if x > x_mid:
+        io.rotate_left()
         # print("rotate left", end = " ")
         pass
-    elif (x > x_mid):
-        io.moveRight()
+    elif x < x_mid:
+        io.rotate_right()
         # print("rotate right", end = " ")
         pass
     # print("base angle")
     # print(io.getBaseAngle())
     # time.sleep(1)
-    if (y < y_mid):
-        io.moveUp()
+    if y > y_mid:
+        io.rotate_up()
         # print("rotate up")
         pass
-    elif (y > y_mid):
-        io.moveDown()
+    elif y < y_mid:
+        io.rotate_down()
         # print("rotate down")
         pass
     # print("camera angle")
@@ -55,7 +54,7 @@ def main():
     
     n_frames = 0
     fps_cum = 0.0
-    fps_avg = 0.0
+    # fps_avg = 0.0
 
     while True:
         ret, frame=cap.read()
@@ -72,11 +71,7 @@ def main():
             fps_cum = 0
             n_frames = 0
 
-
-        # frame = utils.draw_boxes_with_scores(frame, bboxes, scores)
-
         frame, rectangle = app.draw_largest_box(frame, bboxes, scores)
-        midpoint = None
         #if the rectangle has nothing, this will be skipped
         if rectangle:
             (a,b),(c,d) = rectangle
@@ -94,8 +89,11 @@ def main():
             break
     cv2.release()
     cv2.destroyAllWindows()
+    io.stop_all()
 
 
 
 if __name__ == "__main__":
     main()
+
+
