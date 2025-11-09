@@ -23,9 +23,6 @@ class IoControl:
         self.camera_angle = 135
         self.base_angle = 135
 
-        #base.ChangeDutyCycle(0)
-        #base.ChangeDutyCycle(0)
-
 
     def degrees_to_duty_cycle(self, degrees):
         """
@@ -123,10 +120,11 @@ class IoControl:
     def getBaseAngle(self):
         return self.base_angle
 
-    def getCameraAngle(self):
+    def getCameraAngle(self):s
         return self.camera_angle
 
     def getToggledStatus(self):
+        print(GPIO.input(37))
         if GPIO.input(37) == GPIO.LOW:
             return True
         else:
