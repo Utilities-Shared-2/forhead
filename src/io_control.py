@@ -17,6 +17,8 @@ class IoControl:
         self.camera.start(0)
         self.base.ChangeDutyCycle(7.5) #initalize the position to be 135 deg
         self.camera.ChangeDutyCycle(7.5)
+        self.base.stop()
+        self.camera.stop()
         self.camera_angle = 135
         self.base_angle = 135
         time.sleep(0.5)
@@ -46,58 +48,66 @@ class IoControl:
 
     def moveRight(self):
         if self.base_angle <=270:
+            self.base.start(0)
             self.base.ChangeDutyCycle(self.degrees_to_duty_cycle(self.base_angle+0.1))
-            time.sleep(0.5)
             self.base_angle += 0.1
+            self.base.stop()
         return
 
     def moveRightInc(self, inc):
         if self.base_angle <= 270:
+            self.base.start(0)
             self.base.ChangeDutyCycle(self.degrees_to_duty_cycle(self.base_angle + inc))
-            time.sleep(0.5)
             self.base_angle += inc
+            self.base.stop()
         return
 
     def moveLeft(self):
         if self.base_angle >= 0:
+            self.base.start(0)
             self.base.ChangeDutyCycle(self.degrees_to_duty_cycle(self.base_angle-0.1))
-            time.sleep(0.5)
             self.base_angle -= 0.1
+            self.base.stop()
         return
 
     def moveLeftInc(self, inc):
         if self.base_angle >= 0:
+            self.base.start(0)
             self.base.ChangeDutyCycle(self.degrees_to_duty_cycle(self.base_angle - inc))
-            time.sleep(0.5)
             self.base_angle -= inc
+            self.base.stop()
         return
 
     def moveUp(self):
         if self.camera_angle <=270:
+            self.camera.start(0)
             self.camera.ChangeDutyCycle(self.degrees_to_duty_cycle(self.camera_angle+0.1))
-            time.sleep(0.5)
             self.camera_angle += 0.1
+            self.camera.stop()
         return
 
     def moveUpInc(self, inc):
         if self.camera_angle <=270:
+            self.camera.start(0)
             self.camera.ChangeDutyCycle(self.degrees_to_duty_cycle(self.camera_angle+inc))
-            time.sleep(0.5)
             self.camera_angle += inc
+            self.camera.stop()
         return
 
     def moveDown(self):
         if self.camera_angle >= 0:
+            self.camera.start(0)
             self.camera.ChangeDutyCycle(self.degrees_to_duty_cycle(self.camera_angle-0.1))
-            time.sleep(0.5)
             self.camera_angle -= 0.1
+            self.camera.stop()
         return
 
     def moveDownInc(self, inc):
         if self.camera_angle >= 0:
+            self.camera.start(0)
             self.camera.ChangeDutyCycle(self.degrees_to_duty_cycle(self.camera_angle-inc))
-            time.sleep(0.5)
             self.camera_angle -= inc
+            self.camera.stop()
         return
 
 
