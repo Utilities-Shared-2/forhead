@@ -11,14 +11,14 @@ class io_control:
     def __init__(self):
         # PWM signal .5ms  = 0, 2.5ms = 270
         GPIO.setmode(GPIO.BOARD)
-        GPIO.setup(37, GPIO.IN)  # Flip Switch
-        GPIO.setup(32, GPIO.OUT)  # Base motor(pin32)
-        GPIO.setup(33, GPIO.OUT)  # Camera motor (pin33)
+        #GPIO.setup(37, GPIO.IN)  # Flip Switch
+        GPIO.setup(11, GPIO.OUT)  # Base motor(pin32)
+        GPIO.setup(13, GPIO.OUT)  # Camera motor (pin33)
         #GPIO.setup(12, GPIO.OUT)
         #GPIO.setup(13, GPIO.OUT)
 
-        self.base = GPIO.PWM(32, 50)
-        self.camera = GPIO.PWM(33, 50)
+        self.base = GPIO.PWM(11, 50)
+        self.camera = GPIO.PWM(13, 50)
         self.base.start(0)
         self.camera.start(0)
         self.base.ChangeDutyCycle(7.5) #initalize the position to be 135 deg
