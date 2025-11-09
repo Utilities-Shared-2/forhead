@@ -23,27 +23,25 @@ def center(midpoint, size):
     #we only rotate by a tiny bit. we can probably just recursively call it until it's centered
     #the left right rotation might be wrong cuz mirroring
     if (x < x_mid):
-        io.moveLeft()
+        io.moveLeftInc(0.5)
         print("rotate left", end = " ")
         pass
     elif (x > x_mid):
-        io.moveRight()
+        io.moveRightInc(0.5)
         print("rotate right", end = " ")
         pass
     if (y < y_mid):
-        io.moveUp()
+        io.moveUpInc(0.5)
         print("rotate up")
         pass
     elif (y > y_mid):
-        io.moveDown()
+        io.moveDownInc(0.5)
         print("rotate down")
         pass
-        
-    time.sleep(0.5)
+    time.sleep(1)
 
 
 def main():
-    print("hi")
     # cv2.namedWindow("preview")
 
     cap = cv2.VideoCapture(0)
@@ -75,36 +73,21 @@ def main():
 
         frame, rectangle = app.draw_largest_box(frame, bboxes, scores)
         midpoint = None
+        #if the rectangle has nothing, this will be skipped
         if rectangle:
             (a,b),(c,d) = rectangle
             midpoint = (a+(c-a)//2, b+(d-b)//2)
             midpoint = (int(midpoint[0]), int(midpoint[1]))
             frame = utils.put_text_on_image(frame, position=(10, 150), text=f"midpoint{midpoint}")
-            
-            
-            
             if (io.getToggledStatus()):
                 center(midpoint, frame.shape[:2])#i don't think order reall matters here with this line
-
-
-        # print(midpoint)
-        
-
         frame = utils.put_text_on_image(frame, position=(10,50), text='FPS: {:.2f}'.format( fps_avg ))
 
         cv2.imshow('frame', frame)
         cv2.waitKey(1)
-
-        # print("hi")
-
-
-
         k = cv2.waitKey(1) & 0xFF#copied straight from another repo. not sure why they used 0xff. maybe to extract just the ascii bytes
         if k == 27 or k == ord('q'):
             break
-
-    
-
     cv2.release()
     cv2.destroyAllWindows()
 

@@ -113,7 +113,7 @@ class io_control:
         return self.camera_angle
 
     def getToggledStatus(self):
-        return true
+        return True
         if GPIO.input(37) == GPIO.LOW:
             return True
         else:
