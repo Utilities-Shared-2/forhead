@@ -1,7 +1,5 @@
 import numpy as np
 import cv2
-# import RPi.GPIO as GPIO
-import io_control as io
 
 
 def draw_largest_box(image, boxes, scores):
