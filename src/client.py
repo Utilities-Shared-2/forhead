@@ -93,5 +93,5 @@ def main_loop(capture_index=0, loop_delay=0.05):
     finally:
         cap.release()
 
-if __name__ == "__client__":
-    main_loop()
+# if __name__ == "__client__":
+main_loop()
