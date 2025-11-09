@@ -52,7 +52,7 @@ class IoControl:
             self.base.start(0)
             self.base.ChangeDutyCycle(self.degrees_to_duty_cycle(self.base_angle+0.1))
             self.base_angle += 0.1
-            time.sleep(0.2)
+            time.sleep(1)
             self.base.stop()
         return
 
@@ -61,7 +61,7 @@ class IoControl:
             self.base.start(0)
             self.base.ChangeDutyCycle(self.degrees_to_duty_cycle(self.base_angle + inc))
             self.base_angle += inc
-            time.sleep(0.2)
+            time.sleep(1)
             self.base.stop()
         return
 
@@ -70,7 +70,7 @@ class IoControl:
             self.base.start(0)
             self.base.ChangeDutyCycle(self.degrees_to_duty_cycle(self.base_angle-0.1))
             self.base_angle -= 0.1
-            time.sleep(0.2)
+            time.sleep(1)
             self.base.stop()
         return
 
@@ -79,7 +79,7 @@ class IoControl:
             self.base.start(0)
             self.base.ChangeDutyCycle(self.degrees_to_duty_cycle(self.base_angle - inc))
             self.base_angle -= inc
-            time.sleep(0.2)
+            time.sleep(1)
             self.base.stop()
         return
 
@@ -88,7 +88,7 @@ class IoControl:
             self.camera.start(0)
             self.camera.ChangeDutyCycle(self.degrees_to_duty_cycle(self.camera_angle+0.1))
             self.camera_angle += 0.1
-            time.sleep(0.2)
+            time.sleep(1)
             self.camera.stop()
         return
 
@@ -97,7 +97,7 @@ class IoControl:
             self.camera.start(0)
             self.camera.ChangeDutyCycle(self.degrees_to_duty_cycle(self.camera_angle+inc))
             self.camera_angle += inc
-            time.sleep(0.2)
+            time.sleep(1)
             self.camera.stop()
         return
 
@@ -106,7 +106,7 @@ class IoControl:
             self.camera.start(0)
             self.camera.ChangeDutyCycle(self.degrees_to_duty_cycle(self.camera_angle-0.1))
             self.camera_angle -= 0.1
-            time.sleep(0.2)
+            time.sleep(1)
             self.camera.stop()
         return
 
@@ -115,7 +115,7 @@ class IoControl:
             self.camera.start(0)
             self.camera.ChangeDutyCycle(self.degrees_to_duty_cycle(self.camera_angle-inc))
             self.camera_angle -= inc
-            time.sleep(0.2)
+            time.sleep(1)
             self.camera.stop()
         return
 

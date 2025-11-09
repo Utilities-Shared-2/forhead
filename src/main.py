@@ -23,26 +23,26 @@ def center(midpoint, size):
     #the left right rotation might be wrong cuz mirroring
     if (x < x_mid):
         io.moveLeftInc(1)
-        print("rotate left", end = " ")
+        # print("rotate left", end = " ")
         pass
     elif (x > x_mid):
         io.moveRightInc(1)
-        print("rotate right", end = " ")
+        # print("rotate right", end = " ")
         pass
-    print("base angle")
-    print(io.getBaseAngle())
-    time.sleep(1)
+    # print("base angle")
+    # print(io.getBaseAngle())
+    # time.sleep(1)
     if (y < y_mid):
         io.moveUpInc(1)
-        print("rotate up")
+        # print("rotate up")
         pass
     elif (y > y_mid):
         io.moveDownInc(1)
-        print("rotate down")
+        # print("rotate down")
         pass
-    print("camera angle")
-    print(io.getCameraAngle())
-    time.sleep(1)
+    # print("camera angle")
+    # print(io.getCameraAngle())
+    # time.sleep(1)
 
 
 def main():
