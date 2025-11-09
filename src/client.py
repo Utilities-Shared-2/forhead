@@ -6,7 +6,7 @@ import requests
 import time
 from io_control_pigio import IoControl
 
-SERVER = "http://192.168.1.100:5000/process"   # change to your server IP
+SERVER = "http://192.168.1.100:6000/process"   # change to your server IP
 AUTH = {"Authorization": "Bearer my-secret-token"}  # optional
 
 io = IoControl()

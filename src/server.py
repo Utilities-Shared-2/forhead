@@ -5,9 +5,9 @@ import time
 from recognition import FaceDetector
 import utils
 import framebox as app
-from io_control_pigio import IoControl
+# from io_control_pigio import IoControl
 
-io = IoControl()
+# io = IoControl()
 
 commands = []
 
@@ -138,7 +138,7 @@ def process():
 def health():
     return jsonify({"status": "ok"}), 200
 
-if __name__ == "__server__":
+# if __name__ == "":
     # server_main()
-    app.run(host="0.0.0.0", port=5000)
+app.run(host="0.0.0.0", port=6000)
 
