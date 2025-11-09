@@ -3,7 +3,7 @@ import time
 import subprocess
 
 class IoControl:
-    defaultInc = 0.1
+    defaultInc = 5
     def __init__(self):
         # --- Auto-start pigpiod if it's not running ---
         if not self._is_pigpiod_running():
