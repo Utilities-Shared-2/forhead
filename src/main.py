@@ -41,7 +41,7 @@ def center(midpoint, size):
         pass
     # print("camera angle")
     # print(io.getCameraAngle())
-    # time.sleep(1)
+    time.sleep(.5)
 
 
 def main():

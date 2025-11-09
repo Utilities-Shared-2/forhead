@@ -3,7 +3,7 @@ import time
 import subprocess
 
 class IoControl:
-    defaultInc = 10
+    defaultInc = 0.1
     def __init__(self):
         # --- Auto-start pigpiod if it's not running ---
         if not self._is_pigpiod_running():
@@ -80,7 +80,6 @@ class IoControl:
         if self.base_angle <= 270:
             self.set_servo_pulsewidth(self.base_pin, self.degrees_to_pulsewidth(self.base_angle + inc))
             self.base_angle += inc
-            time.sleep(1)
         return
 
 
@@ -88,21 +87,18 @@ class IoControl:
         if self.base_angle >= 0:
             self.set_servo_pulsewidth(self.base_pin, self.degrees_to_pulsewidth(self.base_angle - inc))
             self.base_angle -= inc
-            time.sleep(1)
         return
 
     def rotate_up(self, inc = defaultInc):
         if self.camera_angle <= 270:
             self.set_servo_pulsewidth(self.camera_pin, self.degrees_to_pulsewidth(self.camera_angle + inc))
             self.camera_angle += inc
-            time.sleep(1)
         return
 
     def rotate_down(self, inc = defaultInc):
         if self.camera_angle >= 0:
             self.set_servo_pulsewidth(self.camera_pin, self.degrees_to_pulsewidth(self.camera_angle - inc))
             self.camera_angle -= inc
-            time.sleep(1)
         return
 
     def get_base_angle(self):
