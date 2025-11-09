@@ -29,7 +29,8 @@ def center(midpoint, size):
         io.moveRightInc(0.5)
         print("rotate right", end = " ")
         pass
-    print("base angle"+io.getBaseAngle())
+    print("base angle")
+    print(io.getBaseAngle())
     if (y < y_mid):
         io.moveUpInc(0.5)
         print("rotate up")
@@ -38,7 +39,8 @@ def center(midpoint, size):
         io.moveDownInc(0.5)
         print("rotate down")
         pass
-    print("camera angle"+ io.getCameraAngle())
+    print("camera angle")
+    print(io.getCameraAngle())
 
 
 def main():
