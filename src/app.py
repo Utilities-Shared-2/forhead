@@ -52,30 +52,3 @@ def draw_largest_box(image, boxes, scores):
     return image, ((box[0], box[1]), (box[2], box[3]))
 
 
-#midpoint of the face box and the size of the frame
-def center(midpoint, size):
-    x_mid = size[1]//2
-    y_mid = size[0]//2
-
-    x = midpoint[0]
-    y = midpoint[1]
-    print(y)
-    
-    #we only rotate by a tiny bit. we can probably just recursively call it until it's centered
-    #the left right rotation might be wrong cuz mirroring
-    if (x < x_mid):
-        io.moveLeft()
-        print("rotate left", end = " ")
-        pass
-    elif (x > x_mid):
-        io.moveRight()
-        print("rotate right", end = " ")
-        pass
-    if (y < y_mid):
-        io.moveUp()
-        print("rotate up")
-        pass
-    elif (y > y_mid):
-        io.moveDown()
-        print("rotate down")
-        pass

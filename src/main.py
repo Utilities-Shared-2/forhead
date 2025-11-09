@@ -8,6 +8,38 @@ import utils
 import app
 import io_control
 
+io = io_control.io_control()
+
+
+#midpoint of the face box and the size of the frame
+def center(midpoint, size):
+    x_mid = size[1]//2
+    y_mid = size[0]//2
+
+    x = midpoint[0]
+    y = midpoint[1]
+    print(y)
+    
+    #we only rotate by a tiny bit. we can probably just recursively call it until it's centered
+    #the left right rotation might be wrong cuz mirroring
+    if (x < x_mid):
+        io.moveLeft()
+        print("rotate left", end = " ")
+        pass
+    elif (x > x_mid):
+        io.moveRight()
+        print("rotate right", end = " ")
+        pass
+    if (y < y_mid):
+        io.moveUp()
+        print("rotate up")
+        pass
+    elif (y > y_mid):
+        io.moveDown()
+        print("rotate down")
+        pass
+
+
 def main():
     print("hi")
     # cv2.namedWindow("preview")
@@ -16,8 +48,6 @@ def main():
 
     file = "model/public/ultra-lightweight-face-detection-slim-320/FP16/ultra-lightweight-face-detection-slim-320.xml"
     face = FaceDetector(model=file, confidence_thr = 0.5, overlap_thr = 0.7)
-
-    io = io_control.io_control()
     
     n_frames = 0
     fps_cum = 0.0
