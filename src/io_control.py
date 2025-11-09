@@ -2,14 +2,13 @@ import RPi.GPIO as GPIO
 import time
 
 
-base_angle = 135
-camera_angle = 135
-base = None
-camera = None
+#self.base_angle = 135
+#self.camera_angle = 135
+#base = None
+#camera = None
 
 class io_control:
     def __init__(self):
-        global base, camera
         # PWM signal .5ms  = 0, 2.5ms = 270
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup(37, GPIO.IN)  # Flip Switch
@@ -18,12 +17,15 @@ class io_control:
         #GPIO.setup(12, GPIO.OUT)
         #GPIO.setup(13, GPIO.OUT)
 
-        base = GPIO.PWM(32, 50)
-        camera = GPIO.PWM(33, 50)
-        base.start(0)
-        camera.start(0)
-        base.ChangeDutyCycle(7.5) #initalize the position to be 135 deg
-        camera.ChangeDutyCycle(7.5)
+        self.base = GPIO.PWM(32, 50)
+        self.camera = GPIO.PWM(33, 50)
+        self.base.start(0)
+        self.camera.start(0)
+        self.base.ChangeDutyCycle(7.5) #initalize the position to be 135 deg
+        self.camera.ChangeDutyCycle(7.5)
+
+        self.camera_angle = 135
+        self.base_angle = 135
         #time.sleep(0.5)
         #base.ChangeDutyCycle(0)
         #base.ChangeDutyCycle(0)
@@ -50,69 +52,59 @@ class io_control:
 
 
     def moveRight(self):
-        global base_angle
-        if base_angle <=270:
-            base.ChangeDutyCycle(self.degrees_to_duty_cycle(base_angle+0.1))
-            base_angle += 0.1
+        if self.base_angle <=270:
+            self.base.ChangeDutyCycle(self.degrees_to_duty_cycle(self.base_angle+0.1))
+            self.base_angle += 0.1
         return
 
     def moveRightInc(self, inc):
-        global base_angle
-        if base_angle <= 270:
-            base.ChangeDutyCycle(self.degrees_to_duty_cycle(base_angle + inc))
-            base_angle += inc
+        if self.base_angle <= 270:
+            self.base.ChangeDutyCycle(self.degrees_to_duty_cycle(self.base_angle + inc))
+            self.base_angle += inc
         return
 
     def moveLeft(self):
-        global base_angle
-        if base_angle >= 0:
-            base.ChangeDutyCycle(self.degrees_to_duty_cycle(base_angle-0.1))
-            base_angle -= 0.1
+        if self.base_angle >= 0:
+            self.base.ChangeDutyCycle(self.degrees_to_duty_cycle(self.base_angle-0.1))
+            self.base_angle -= 0.1
         return
 
     def moveLeftInc(self, inc):
-        global base_angle
-        if base_angle >= 0:
-            base.ChangeDutyCycle(self.degrees_to_duty_cycle(base_angle - inc))
-            base_angle -= inc
+        if self.base_angle >= 0:
+            self.base.ChangeDutyCycle(self.degrees_to_duty_cycle(self.base_angle - inc))
+            self.base_angle -= inc
         return
 
     def moveUp(self):
-        global camera_angle
-        if camera_angle <=270:
-            camera.ChangeDutyCycle(self.degrees_to_duty_cycle(camera_angle+0.1))
-            camera_angle += 0.1
+        if self.camera_angle <=270:
+            self.camera.ChangeDutyCycle(self.degrees_to_duty_cycle(self.camera_angle+0.1))
+            self.camera_angle += 0.1
         return
 
     def moveUpInc(self, inc):
-        global camera_angle
-        if camera_angle <=270:
-            camera.ChangeDutyCycle(self.degrees_to_duty_cycle(camera_angle+inc))
-            camera_angle += inc
+        if self.camera_angle <=270:
+            self.camera.ChangeDutyCycle(self.degrees_to_duty_cycle(self.camera_angle+inc))
+            self.camera_angle += inc
         return
 
     def moveDown(self):
-        global camera_angle
-        if camera_angle >= 0:
-            camera.ChangeDutyCycle(self.degrees_to_duty_cycle(camera_angle-0.1))
-            camera_angle -= 0.1
+        if self.camera_angle >= 0:
+            self.camera.ChangeDutyCycle(self.degrees_to_duty_cycle(self.camera_angle-0.1))
+            self.camera_angle -= 0.1
         return
 
     def moveDownInc(self, inc):
-        global camera_angle
-        if camera_angle >= 0:
-            camera.ChangeDutyCycle(self.degrees_to_duty_cycle(camera_angle-inc))
-            camera_angle -= inc
+        if self.camera_angle >= 0:
+            self.camera.ChangeDutyCycle(self.degrees_to_duty_cycle(self.camera_angle-inc))
+            self.camera_angle -= inc
         return
 
 
     def getBaseAngle(self):
-        global base_angle
-        return base_angle
+        return self.base_angle
 
     def getCameraAngle(self):
-        global camera_angle
-        return camera_angle
+        return self.camera_angle
 
     def getToggledStatus(self):
         return True
