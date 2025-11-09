@@ -6,7 +6,7 @@ import numpy as np
 from recognition import FaceDetector
 import utils
 import app
-import io_control as io
+import io_control
 
 def main():
     print("hi")
@@ -17,9 +17,12 @@ def main():
     file = "model/public/ultra-lightweight-face-detection-slim-320/FP16/ultra-lightweight-face-detection-slim-320.xml"
     face = FaceDetector(model=file, confidence_thr = 0.5, overlap_thr = 0.7)
 
+    io = io_control.io_control()
+    
     n_frames = 0
     fps_cum = 0.0
     fps_avg = 0.0
+
     while True:
         ret, frame=cap.read()
 
@@ -48,7 +51,7 @@ def main():
             
             
             
-            if (io.getToggleStatus()):
+            if (io.getToggledStatus()):
                 app.center(midpoint, frame.shape[:2])#i don't think order reall matters here with this line
 
 
