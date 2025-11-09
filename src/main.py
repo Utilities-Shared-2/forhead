@@ -6,6 +6,7 @@ import numpy as np
 from recognition import FaceDetector
 import utils
 import app
+import io_control as io
 
 def main():
     print("hi")
@@ -44,7 +45,11 @@ def main():
             midpoint = (a+(c-a)//2, b+(d-b)//2)
             midpoint = (int(midpoint[0]), int(midpoint[1]))
             frame = utils.put_text_on_image(frame, position=(10, 150), text=f"midpoint{midpoint}")
-            app.center(midpoint, frame.shape[:2])#i don't think order reall matters here with this line
+            
+            
+            
+            if (io.getToggleStatus()):
+                app.center(midpoint, frame.shape[:2])#i don't think order reall matters here with this line
 
 
         # print(midpoint)

@@ -106,7 +106,7 @@ def getCameraAngle():
     return camera_angle
 
 def getToggledStatus():
-    if GPIO.input(37) == GPIO.HIGH:
+    if GPIO.input(37) == GPIO.LOW:
         return True
     else:
         return False
