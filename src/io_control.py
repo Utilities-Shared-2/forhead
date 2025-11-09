@@ -11,8 +11,8 @@ class io_control:
         # PWM signal .5ms  = 0, 2.5ms = 270
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup(37, GPIO.IN)  # Flip Switch
-        GPIO.setup(32, GPIO.OUT)  # Base motor(pin32)
-        GPIO.setup(33, GPIO.OUT)  # Camera motor (pin33)
+        # GPIO.setup(32, GPIO.OUT)  # Base motor(pin32)
+        # GPIO.setup(33, GPIO.OUT)  # Camera motor (pin33)
         GPIO.setup(12, GPIO.OUT)
         GPIO.setup(13, GPIO.OUT)
 
@@ -110,6 +110,7 @@ class io_control:
         return camera_angle
 
     def getToggledStatus(self):
+        return True
         if GPIO.input(37) == GPIO.LOW:
             return True
         else:
