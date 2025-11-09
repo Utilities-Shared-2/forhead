@@ -1,4 +1,6 @@
 import RPi.GPIO as GPIO
+import time
+
 
 base_angle = 135
 camera_angle = 135
@@ -13,8 +15,8 @@ class io_control:
         GPIO.setup(37, GPIO.IN)  # Flip Switch
         # GPIO.setup(32, GPIO.OUT)  # Base motor(pin32)
         # GPIO.setup(33, GPIO.OUT)  # Camera motor (pin33)
-        GPIO.setup(12, GPIO.OUT)
         GPIO.setup(13, GPIO.OUT)
+        GPIO.setup(14, GPIO.OUT)
 
         base = GPIO.PWM(12, 50)
         camera = GPIO.PWM(13, 50)
@@ -22,6 +24,9 @@ class io_control:
         camera.start(0)
         base.ChangeDutyCycle(7.5) #initalize the position to be 135 deg
         camera.ChangeDutyCycle(7.5)
+        time.sleep(0.5)
+        base.ChangeDutyCycle(0)
+        base.ChangeDutyCycle(0)
 
 
     def degrees_to_duty_cycle(self, degrees):
