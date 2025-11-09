@@ -77,9 +77,9 @@ import cv2
 import uuid
 import datetime
 
-app = Flask(__name__)
+server = Flask(__name__)
 
-@app.route("/process", methods=["POST"])
+@server.route("/process", methods=["POST"])
 def process():
     # Expect form file named 'image'
     if "image" not in request.files:
@@ -95,6 +95,9 @@ def process():
     # At this point `img` is available to be processed (no AI here).
     # Return a simple commands list for the Pi to execute.
     # Replace the list below with your real command-generation later.
+
+
+    frame = img
 
     start_time = time.perf_counter()
     bboxes, scores = face.inference(frame)
@@ -134,11 +137,11 @@ def process():
     }
     return jsonify(response), 200
 
-@app.route("/health", methods=["GET"])
+@server.route("/health", methods=["GET"])
 def health():
     return jsonify({"status": "ok"}), 200
 
 # if __name__ == "":
     # server_main()
-app.run(host="0.0.0.0", port=6000)
+server.run(host="0.0.0.0", port=50300, use_reloader=False, debug=False)
 
