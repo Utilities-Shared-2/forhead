@@ -15,8 +15,8 @@ class io_control:
         GPIO.setup(37, GPIO.IN)  # Flip Switch
         # GPIO.setup(32, GPIO.OUT)  # Base motor(pin32)
         # GPIO.setup(33, GPIO.OUT)  # Camera motor (pin33)
+        GPIO.setup(12, GPIO.OUT)
         GPIO.setup(13, GPIO.OUT)
-        GPIO.setup(14, GPIO.OUT)
 
         base = GPIO.PWM(12, 50)
         camera = GPIO.PWM(13, 50)
