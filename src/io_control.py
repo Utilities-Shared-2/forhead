@@ -13,6 +13,9 @@ class io_control:
         GPIO.setup(37, GPIO.IN)  # Flip Switch
         GPIO.setup(32, GPIO.OUT)  # Base motor(pin32)
         GPIO.setup(33, GPIO.OUT)  # Camera motor (pin33)
+        GPIO.setup(12, GPIO.OUT)
+        GPIO.setup(13, GPIO.OUT)
+
         base = GPIO.PWM(12, 50)
         camera = GPIO.PWM(13, 50)
         base.start(0)
@@ -21,7 +24,7 @@ class io_control:
         camera.ChangeDutyCycle(7.5)
 
 
-    def degrees_to_duty_cycle(degrees):
+    def degrees_to_duty_cycle(self, degrees):
         """
         Convert degrees to duty cycle percentage for a servo motor.
         
@@ -41,56 +44,56 @@ class io_control:
         return duty_cycle
 
 
-    def moveRight():
+    def moveRight(self):
         global base_angle
         if base_angle <=270:
             base.ChangeDutyCycle(degrees_to_duty_cycle(base_angle+0.1))
             base_angle += 0.1
         return
 
-    def moveRight(inc):
+    def moveRight(self, inc):
         global base_angle
         if base_angle <= 270:
             base.ChangeDutyCycle(degrees_to_duty_cycle(base_angle + inc))
             base_angle += inc
         return
 
-    def moveLeft():
+    def moveLeft(self):
         global base_angle
         if base_angle >= 0:
             base.ChangeDutyCycle(degrees_to_duty_cycle(base_angle-0.1))
             base_angle -= 0.1
         return
 
-    def moveLeft(inc):
+    def moveLeft(self, inc):
         global base_angle
         if base_angle >= 0:
             base.ChangeDutyCycle(degrees_to_duty_cycle(base_angle - inc))
             base_angle -= inc
         return
 
-    def moveUp():
+    def moveUp(self):
         global camera_angle
         if camera_angle <=270:
             camera.ChangeDutyCycle(degrees_to_duty_cycle(camera_angle+0.1))
             camera_angle += 0.1
         return
 
-    def moveUp(inc):
+    def moveUp(self, inc):
         global camera_angle
         if camera_angle <=270:
             camera.ChangeDutyCycle(degrees_to_duty_cycle(camera_angle+inc))
             camera_angle += inc
         return
 
-    def moveDown():
+    def moveDown(self):
         global camera_angle
         if camera_angle >= 0:
             camera.ChangeDutyCycle(degrees_to_duty_cycle(camera_angle-0.1))
             camera_angle -= 0.1
         return
 
-    def moveDown(inc):
+    def moveDown(self, inc):
         global camera_angle
         if camera_angle >= 0:
             camera.ChangeDutyCycle(degrees_to_duty_cycle(camera_angle-inc))
@@ -98,15 +101,15 @@ class io_control:
         return
 
 
-    def getBaseAngle():
+    def getBaseAngle(self):
         global base_angle
         return base_angle
 
-    def getCameraAngle():
+    def getCameraAngle(self):
         global camera_angle
         return camera_angle
 
-    def getToggledStatus():
+    def getToggledStatus(self):
         if GPIO.input(37) == GPIO.LOW:
             return True
         else:
