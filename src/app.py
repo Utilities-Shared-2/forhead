@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 # import RPi.GPIO as GPIO
+import io_control as io
 
 
 def draw_largest_box(image, boxes, scores):
@@ -63,18 +64,18 @@ def center(midpoint, size):
     #we only rotate by a tiny bit. we can probably just recursively call it until it's centered
     #the left right rotation might be wrong cuz mirroring
     if (x < x_mid):
-        #rotate_left()
+        io.moveLeft()
         print("rotate left", end = " ")
         pass
     elif (x > x_mid):
-        #rotate_right()
+        io.moveRight()
         print("rotate right", end = " ")
         pass
     if (y < y_mid):
-        #rotate_up()
+        io.moveUp()
         print("rotate up")
         pass
     elif (y > y_mid):
-        #rotate_down()
+        io.moveDown()
         print("rotate down")
         pass
