@@ -116,11 +116,10 @@ class IoControl:
             self.camera.stop()
         return
 
-
     def getBaseAngle(self):
         return self.base_angle
 
-    def getCameraAngle(self):s
+    def getCameraAngle(self):
         return self.camera_angle
 
     def getToggledStatus(self):
