@@ -6,7 +6,7 @@ import numpy as np
 from recognition import FaceDetector
 import utils
 import framebox as app
-from io_control import IoControl
+from io_control_pigio import IoControl
 
 io = IoControl()
 
