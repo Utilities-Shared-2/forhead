@@ -44,8 +44,10 @@ def main():
             midpoint = (a+(c-a)//2, b+(d-b)//2)
             midpoint = (int(midpoint[0]), int(midpoint[1]))
             frame = utils.put_text_on_image(frame, position=(10, 150), text=f"midpoint{midpoint}")
+            app.center(midpoint, frame.shape[:2])#i don't think order reall matters here with this line
 
-        print(midpoint)
+
+        # print(midpoint)
         
 
         frame = utils.put_text_on_image(frame, position=(10,50), text='FPS: {:.2f}'.format( fps_avg ))
@@ -56,7 +58,6 @@ def main():
         # print("hi")
 
 
-        app.center(midpoint, frame.shape[:2])
 
         k = cv2.waitKey(1) & 0xFF#copied straight from another repo. not sure why they used 0xff. maybe to extract just the ascii bytes
         if k == 27 or k == ord('q'):
