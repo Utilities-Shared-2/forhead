@@ -22,22 +22,22 @@ def center(midpoint, size):
     #we only rotate by a tiny bit. we can probably just recursively call it until it's centered
     if x > x_mid:
         io.rotate_left()
-        # print("rotate left", end = " ")
+        print("rotate left")
         pass
     elif x < x_mid:
         io.rotate_right()
-        # print("rotate right", end = " ")
+        print("rotate right")
         pass
     # print("base angle")
     # print(io.getBaseAngle())
     # time.sleep(1)
     if y > y_mid:
         io.rotate_up()
-        # print("rotate up")
+        print("rotate up",end=" ")
         pass
     elif y < y_mid:
         io.rotate_down()
-        # print("rotate down")
+        print("rotate down",end=" ")
         pass
     # print("camera angle")
     # print(io.getCameraAngle())
