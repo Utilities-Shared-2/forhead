@@ -89,6 +89,7 @@ class IoControl:
     def moveDown(self):
         if self.camera_angle >= 0:
             self.camera.ChangeDutyCycle(self.degrees_to_duty_cycle(self.camera_angle-0.1))
+            time.sleep(0.5)
             self.camera_angle -= 0.1
         return
 
