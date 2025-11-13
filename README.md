@@ -23,7 +23,7 @@ Raspberry Pi Connect or Remote Desktop:
 ssh :
 - assuming RasPi is connect to your local network or vpn correctly, and have ssh enabled enter the following command
 ```bash
-  ssh [raspi's name]@[local ip address]
+  ssh [raspi name]@[local ip address]
 ```
 i.e: 
 ```bash
