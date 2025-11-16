@@ -21,7 +21,7 @@ class IoControl:
         # GPIO pin numbers (BOARD → BCM conversion if needed)
         # BOARD 11 → BCM 17
         # BOARD 13 → BCM 27
-        # BOARD 37 → BCM 26 (if used)
+        # BOARD 37 → BCM 26
         self.base_pin = 17
         self.camera_pin = 27
         self.switch_pin = 26
@@ -132,4 +132,8 @@ class IoControl:
         self.set_servo_pulsewidth(self.base_pin, self.degrees_to_pulsewidth(self.camera_angle))
         self.set_servo_pulsewidth(self.camera_pin, self.degrees_to_pulsewidth(self.base_angle))
         time.sleep(1)
+
+    def readSwitch(self):
+        self.pi.read(self.switch_pin)
+        time.sleep(0.1)
 

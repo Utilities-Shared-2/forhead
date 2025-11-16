@@ -53,6 +53,7 @@ def main():
     # fps_avg = 0.0
 
     while True:
+        io.readSwitch()
         if not io.resetToggled:
             ret, frame=cap.read()
             start_time = time.perf_counter()
