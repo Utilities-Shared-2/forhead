@@ -34,7 +34,7 @@ class IoControl:
         #Apply Glitch Filter (Debounce)
         self.pi.set_glitch_filter(self.switch_pin, self.DEBOUNCE_TIME_US)
         # pigpio.EITHER_EDGE will trigger on both FALLING (0) and RISING (1) transitions
-        cb = self.pi.callback(self.switch_pin, pigpio.EITHER_EDGE, self.switch_callback)
+        self.cb = self.pi.callback(self.switch_pin, pigpio.EITHER_EDGE, self.switch_callback)
 
 
         # Initialize positions
@@ -107,7 +107,7 @@ class IoControl:
     def get_camera_angle(self):
         return self.camera_angle
 
-    def switch_callback(self,level):
+    def switch_callback(self,gpio, level, tick):
         """Handles the press (FALLING) and release (RISING) events."""
 
         if level == 0:  # FALLING edge (Switch Pressed)
@@ -118,7 +118,6 @@ class IoControl:
         elif level == 1:  # RISING edge (Switch Released)
             print("--- Limit Switch Released! ---")
             self.resetToggled = False
-            time.sleep(4)
 
     def stop_all(self):
         self.pi.set_servo_pulsewidth(self.base_pin, 0)
