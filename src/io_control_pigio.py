@@ -4,6 +4,8 @@ import subprocess
 
 class IoControl:
     defaultInc = 2
+    # Debouncing: Glitch filter time in microseconds (us)
+    DEBOUNCE_TIME_US = 10000
     def __init__(self):
         # --- Auto-start pigpiod if it's not running ---
         if not self._is_pigpiod_running():
@@ -22,23 +24,22 @@ class IoControl:
         # BOARD 37 → BCM 26 (if used)
         self.base_pin = 17
         self.camera_pin = 27
-        #self.switch_pin = 26
-
-        # PWM frequency and angle setup
-        self.camera_angle = 135
-        self.base_angle = 135
-
+        self.switch_pin = 26
+        self.resetToggled = False
         # Initialize pins
         self.pi.set_mode(self.base_pin, pigpio.OUTPUT)
         self.pi.set_mode(self.camera_pin, pigpio.OUTPUT)
-        # self.pi.set_mode(self.switch_pin, pigpio.INPUT)
-        # self.pi.set_pull_up_down(self.switch_pin, pigpio.PUD_OFF)
+        self.pi.set_mode(self.switch_pin, pigpio.INPUT)
+        self.pi.set_pull_up_down(self.switch_pin, pigpio.PUD_UP)
+        #Apply Glitch Filter (Debounce)
+        self.pi.set_glitch_filter(self.switch_pin, self.DEBOUNCE_TIME_US)
+        # pigpio.EITHER_EDGE will trigger on both FALLING (0) and RISING (1) transitions
+        cb = self.pi.callback(self.switch_pin, pigpio.EITHER_EDGE, self.switch_callback)
+
 
         # Initialize positions
         print("[INFO] initalizing servo position")
-        self.set_servo_pulsewidth(self.base_pin, self.degrees_to_pulsewidth(self.camera_angle))
-        self.set_servo_pulsewidth(self.camera_pin, self.degrees_to_pulsewidth(self.base_angle))
-        time.sleep(1)
+        self.center()
 
     # ------------------------
     # Helper methods
@@ -106,11 +107,28 @@ class IoControl:
     def get_camera_angle(self):
         return self.camera_angle
 
-    # def get_toggled_status(self):
-    #     value = self.pi.read(self.switch_pin)
-    #     print(value)
-    #     return value == 0
+    def switch_callback(self,level, tick):
+        """Handles the press (FALLING) and release (RISING) events."""
+
+        if level == 0:  # FALLING edge (Switch Pressed)
+            print("--- Limit Switch Pressed! ---")
+            self.resetToggled = True
+            self.center()
+
+        elif level == 1:  # RISING edge (Switch Released)
+            print("--- Limit Switch Released! ---")
+            self.resetToggled = False
+            time.sleep(4)
+
     def stop_all(self):
         self.pi.set_servo_pulsewidth(self.base_pin, 0)
         self.pi.set_servo_pulsewidth(self.camera_pin, 0)
         self.pi.stop()
+
+    def center(self):
+        self.camera_angle = 135
+        self.base_angle = 135
+        self.set_servo_pulsewidth(self.base_pin, self.degrees_to_pulsewidth(self.camera_angle))
+        self.set_servo_pulsewidth(self.camera_pin, self.degrees_to_pulsewidth(self.base_angle))
+        time.sleep(1)
+
