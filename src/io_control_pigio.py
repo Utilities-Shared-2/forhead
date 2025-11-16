@@ -107,7 +107,7 @@ class IoControl:
     def get_camera_angle(self):
         return self.camera_angle
 
-    def switch_callback(self,level, tick):
+    def switch_callback(self,level):
         """Handles the press (FALLING) and release (RISING) events."""
 
         if level == 0:  # FALLING edge (Switch Pressed)
@@ -123,6 +123,7 @@ class IoControl:
     def stop_all(self):
         self.pi.set_servo_pulsewidth(self.base_pin, 0)
         self.pi.set_servo_pulsewidth(self.camera_pin, 0)
+        self.cb.cancel()
         self.pi.stop()
 
     def center(self):

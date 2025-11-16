@@ -8,8 +8,6 @@ import framebox as app
 from io_control_pigio import IoControl
 
 io = IoControl()
-
-
 #midpoint of the face box and the size of the frame
 def center(midpoint, size):
     x_mid = size[1]//2
@@ -41,7 +39,6 @@ def center(midpoint, size):
     # print("camera angle")
     # print(io.getCameraAngle())
     # time.sleep(.2)
-
 
 def main():
     # cv2.namedWindow("preview")
@@ -77,7 +74,6 @@ def main():
                 midpoint = (a+(c-a)//2, b+(d-b)//2)
                 midpoint = (int(midpoint[0]), int(midpoint[1]))
                 frame = utils.put_text_on_image(frame, position=(10, 150), text=f"midpoint{midpoint}")
-                # if (io.getToggledStatus()):
                 center(midpoint, frame.shape[:2])
             frame = utils.put_text_on_image(frame, position=(10,50), text='FPS: {:.2f}'.format( fps_avg ))
 
