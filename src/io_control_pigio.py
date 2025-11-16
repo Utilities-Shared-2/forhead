@@ -133,7 +133,5 @@ class IoControl:
         self.set_servo_pulsewidth(self.camera_pin, self.degrees_to_pulsewidth(self.base_angle))
         time.sleep(1)
 
-    def readSwitch(self):
+    def read_switch(self):
         self.pi.read(self.switch_pin)
-        time.sleep(0.1)
-
