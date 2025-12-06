@@ -36,7 +36,6 @@ class IoControl:
         # pigpio.EITHER_EDGE will trigger on both FALLING (0) and RISING (1) transitions
         self.cb = self.pi.callback(self.switch_pin, pigpio.EITHER_EDGE, self.switch_callback)
 
-
         # Initialize positions
         print("[INFO] initalizing servo position")
         self.center()
@@ -44,7 +43,8 @@ class IoControl:
     # ------------------------
     # Helper methods
     # ------------------------
-    def _is_pigpiod_running(self):
+    @staticmethod
+    def _is_pigpiod_running():
         """Check if pigpiod process is running."""
         try:
             output = subprocess.check_output(["pgrep", "pigpiod"])
@@ -52,7 +52,8 @@ class IoControl:
         except subprocess.CalledProcessError:
             return False
 
-    def _start_pigpiod(self):
+    @staticmethod
+    def _start_pigpiod():
         """Start the pigpio daemon using sudo."""
         try:
             subprocess.run(["sudo", "pigpiod"], check=True)
