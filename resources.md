@@ -15,3 +15,7 @@ omz_converter --name ultra-lightweight-face-detection-rfb-slim --download_dir mo
 
 # credits
 https://github.com/Gabriellgpc/ultra-lightweight-face-detection/blob/main/main.py
+
+[Referenced Servo](https://grabcad.com/library/power-hd-lf-20mg-servomotor-1)
+[Referenced Servo Horn](https://grabcad.com/library/3879-servo-motor-horn-for-mg995-mg996-series-motor-sunrobotics_in_fron-1)
+[Referenced Webcam](https://grabcad.com/library/logitech-hd-pro-webcam-c920-1)
