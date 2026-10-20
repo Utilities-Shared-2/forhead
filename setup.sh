@@ -53,11 +53,6 @@ echo ""
 
 # Set permissions
 if [ "$IS_RASPI" = true ]; then
-    echo "[4/4] Setting up permissions..."
-    sudo usermod -a -G video $USER
-    echo "[INFO] Added user to video group for camera access"
-    echo "[INFO] You may need to log out and log back in for this to take effect"
-    
     # Start pigpiod service
     sudo systemctl start pigpiod
     sudo systemctl enable pigpiod
