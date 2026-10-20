@@ -19,9 +19,23 @@ def image_resize(image, width=None, height=None):
     return cv2.resize(image, dsize=dsize)
 
 def non_max_suppression(boxes, overlapThresh):
+    """
+    Apply non-maximum suppression to bounding boxes
+    
+    Args:
+        boxes: numpy array of shape (N, 4) with format [x1, y1, x2, y2]
+        overlapThresh: IoU threshold for suppression
+        
+    Returns:
+        Tuple of (picked_boxes, picked_indices)
+    """
     # if there are no boxes, return an empty list
     if len(boxes) == 0:
-        return []
+        return [], []
+
+    # Convert to numpy array if not already
+    if not isinstance(boxes, np.ndarray):
+        boxes = np.array(boxes)
 
     # initialize the list of picked indexes
     pick = []
@@ -91,7 +105,8 @@ def draw_boxes_with_scores(image, boxes, scores):
     num_boxes = boxes.shape[0]
     for i in range(num_boxes):
         box = boxes[i]
-        score = scores[i][0]
+        # Handle both 1D and 2D score arrays
+        score = scores[i][0] if len(scores[i].shape) > 0 else scores[i]
 
         # Convert the box coordinates to integers
         box = box.astype(int)

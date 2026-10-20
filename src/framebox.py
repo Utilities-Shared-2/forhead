@@ -8,15 +8,12 @@ def draw_largest_box(image, boxes, scores):
 
     num_boxes = boxes.shape[0]
 
-
-    #find the largest box
-
-    #chatgpt generated this to find the index of the largest box in one line
+    # Find the largest box
     idx = max(range(len(boxes)), key=lambda i: (boxes[i][2]-boxes[i][0]) * (boxes[i][3]-boxes[i][1]))
 
-
     box = boxes[idx]
-    score = scores[idx][0]
+    # Handle both 1D and 2D score arrays
+    score = scores[idx][0] if len(scores[idx].shape) > 0 else scores[idx]
 
     # Convert the box coordinates to integers
     box = box.astype(int)
@@ -46,7 +43,7 @@ def draw_largest_box(image, boxes, scores):
     # Draw the text on top of the background rectangle
     cv2.putText(image, text, (text_x, text_y + text_size[1]), font, font_scale, color, thickness)
 
-    #returns the image and ((x_min, y_min), (x_max, y_max))
+    # Returns the image and ((x_min, y_min), (x_max, y_max))
     return image, ((box[0], box[1]), (box[2], box[3]))
 
 

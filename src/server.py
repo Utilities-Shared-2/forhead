@@ -1,6 +1,10 @@
 import cv2
 import time
+import sys
+import os
 
+# Add src directory to path for imports
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from recognition import FaceDetector
 import utils
@@ -58,8 +62,16 @@ app = Flask(__name__)
 
 cap = cv2.VideoCapture(0)
 
-file = "model/public/ultra-lightweight-face-detection-slim-320/FP16/ultra-lightweight-face-detection-slim-320.xml"
-face = FaceDetector(model=file, confidence_thr = 0.5, overlap_thr = 0.7)
+# Use TFLite BlazeFace model (INT8 quantized for Raspberry Pi 3)
+file = "model/blazeface_int8.tflite"
+
+# Check if model exists
+if not os.path.exists(file):
+    print(f"[ERROR] Model file not found: {file}")
+    print("[INFO] Please run 'python download_model.py' to download the model")
+    sys.exit(1)
+
+face = FaceDetector(model=file, confidence_thr=0.5, overlap_thr=0.7, input_size=(128, 128))
 
 n_frames = 0
 fps_cum = 0.0
