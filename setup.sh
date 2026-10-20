@@ -51,8 +51,8 @@ fi
 
 echo ""
 
-# Set permissions
 if [ "$IS_RASPI" = true ]; then
+    echo "[4/4] Starting pigpiod"
     # Start pigpiod service
     sudo systemctl start pigpiod
     sudo systemctl enable pigpiod
