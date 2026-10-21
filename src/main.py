@@ -54,12 +54,12 @@ def main():
     cap = cv2.VideoCapture(0)
 
     # Use TFLite BlazeFace model (INT8 quantized from STMicroelectronics)
-    file = "model/blazeface_int8.tflite"
+    file = "../model/blazeface_int8.tflite"
     
     # Check if model exists
     if not os.path.exists(file):
         print(f"[ERROR] Model file not found: {file}")
-        print("[INFO] Please run 'python download_model.py' to download the model")
+        print("[INFO] Please run 'cd .. && python download_model.py' to download the model")
         sys.exit(1)
     
     face = FaceDetector(model=file, confidence_thr=0.5, overlap_thr=0.7, input_size=(128, 128))
