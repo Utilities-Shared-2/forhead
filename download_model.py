@@ -52,9 +52,9 @@ def download_blazeface_model():
     model_dir = create_model_directory()
     model_path = os.path.join(model_dir, "blazeface_int8.tflite")
     
-    # Official MediaPipe BlazeFace model URL
-    # This is the standard BlazeFace model from MediaPipe
-    model_url = "https://github.com/google/mediapipe/raw/master/mediapipe/modules/face_detection/blazeface.tflite"
+    # Official MediaPipe BlazeFace model URL from Google Storage
+    # This is the standard BlazeFace short-range model from MediaPipe
+    model_url = "https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite"
     
     print("=" * 60)
     print("BlazeFace Model Download for Raspberry Pi 3")
