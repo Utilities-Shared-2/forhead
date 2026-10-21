@@ -37,14 +37,14 @@ if [ -d "venv" ]; then
     source venv/bin/activate
 elif [ -d ".venv" ]; then
     echo "[2/4] Activating existing virtual environment..."
-    source .venv/bin/activate
+    source venv/bin/activate
 elif [ -d "env" ]; then
     echo "[2/4] Activating existing virtual environment..."
     source env/bin/activate
 else
     echo "[2/4] Creating virtual environment..."
-    python3 -m venv venv
-    source venv/bin/activate
+    python3 -m venv .venv
+    source .venv/bin/activate
 fi
 
 # Install Python dependencies
@@ -77,8 +77,10 @@ echo ""
 echo "To run face tracking:"
 if [ "$IS_RASPI" = true ]; then
     echo "  cd src && python3 main.py --raspi"
+    echo "  (add --headless flag for SSH without VNC)"
 else
     echo "  cd src && python3 main.py"
+    echo "  (add --headless flag to disable GUI)"
 fi
 echo ""
 echo "For more information, see README_MIGRATION.md"

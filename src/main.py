@@ -16,6 +16,7 @@ from io_control_uart import IoControl as IoControlUart
 parser = argparse.ArgumentParser(description='Face tracking with servo control')
 parser.add_argument('--raspi', action='store_true', help='Set if running on Raspberry Pi (enables GPIO control via pigpio). If not set, uses UART to communicate with ESP32.')
 parser.add_argument('--uart-port', default='/dev/ttyUSB0', help='UART port for ESP32 communication (default: /dev/ttyUSB0)')
+parser.add_argument('--headless', action='store_true', help='Disable GUI display (useful for headless systems or when running via SSH without VNC)')
 args = parser.parse_args()
 
 if args.raspi:
@@ -95,13 +96,15 @@ def main():
             center(midpoint, frame.shape[:2])
         frame = utils.put_text_on_image(frame, position=(10,50), text='FPS: {:.2f}'.format( fps_avg ))
 
-        # Skip display on headless systems (Raspberry Pi)
-        # cv2.imshow('frame', frame)
-        # k = cv2.waitKey(1) & 0xFF
-        # if k == 27 or k == ord('q'):
-        #     break
+        # Display frame unless headless mode
+        if not args.headless:
+            cv2.imshow('frame', frame)
+            k = cv2.waitKey(1) & 0xFF
+            if k == 27 or k == ord('q'):
+                break
     cap.release()
-    # cv2.destroyAllWindows()
+    if not args.headless:
+        cv2.destroyAllWindows()
     if io is not None:
         io.stop_all()
 
