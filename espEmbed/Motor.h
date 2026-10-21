@@ -6,7 +6,6 @@
 class Motor {
 private:
   int pin;
-  int ledcChannel;
   float kp, ki, kd;
   float setpoint;
   float input;
@@ -17,7 +16,7 @@ private:
   
 public:
   // Constructor
-  Motor(int pin, int ledcChannel, float kp, float ki, float kd);
+  Motor(int pin, float kp, float ki, float kd);
   
   // Initialize motor
   void begin();

@@ -12,8 +12,6 @@
 // Servo configuration
 #define PAN_SERVO_PIN 25
 #define PITCH_SERVO_PIN 26
-#define PAN_LEDC_CHANNEL 0
-#define PITCH_LEDC_CHANNEL 1
 
 // Default PID values
 #define DEFAULT_KP 2.0

@@ -14,9 +14,8 @@
 // Center position (135 degrees for 270° range)
 #define CENTER_DEGREES 135
 
-Motor::Motor(int pin, int ledcChannel, float kp, float ki, float kd) {
+Motor::Motor(int pin, float kp, float ki, float kd) {
   this->pin = pin;
-  this->ledcChannel = ledcChannel;
   this->kp = kp;
   this->ki = ki;
   this->kd = kd;
@@ -29,8 +28,7 @@ Motor::Motor(int pin, int ledcChannel, float kp, float ki, float kd) {
 }
 
 void Motor::begin() {
-  ledcSetup(ledcChannel, LEDC_FREQ, LEDC_RESOLUTION);
-  ledcAttachPin(pin, ledcChannel);
+  ledcAttach(pin, LEDC_FREQ, LEDC_RESOLUTION);
 }
 
 void Motor::update(unsigned long deltaTime) {
@@ -70,7 +68,7 @@ void Motor::setPosition(float degrees) {
   float clampedDegrees = constrain(degrees, 0, 270);
   float pulsewidth = SERVO_MIN_PULSE + clampedDegrees * ((SERVO_MAX_PULSE - SERVO_MIN_PULSE) / 270.0);
   uint32_t pwmValue = pulsewidth * (65536.0 / 20000.0);
-  ledcWrite(ledcChannel, (uint32_t)constrain(pwmValue, PWM_MIN, PWM_MAX));
+  ledcWrite(pin, (uint32_t)constrain(pwmValue, PWM_MIN, PWM_MAX));
 }
 
 void Motor::setKp(float value) { kp = value; }

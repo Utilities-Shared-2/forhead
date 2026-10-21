@@ -2,8 +2,8 @@
 #include "Motor.h"
 
 // Motor objects
-Motor panMotor(PAN_SERVO_PIN, PAN_LEDC_CHANNEL, DEFAULT_KP, DEFAULT_KI, DEFAULT_KD);
-Motor pitchMotor(PITCH_SERVO_PIN, PITCH_LEDC_CHANNEL, DEFAULT_KP, DEFAULT_KI, DEFAULT_KD);
+Motor panMotor(PAN_SERVO_PIN, DEFAULT_KP, DEFAULT_KI, DEFAULT_KD);
+Motor pitchMotor(PITCH_SERVO_PIN, DEFAULT_KP, DEFAULT_KI, DEFAULT_KD);
 
 // Timing
 unsigned long lastTime = 0;
