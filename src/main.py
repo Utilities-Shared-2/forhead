@@ -95,12 +95,13 @@ def main():
             center(midpoint, frame.shape[:2])
         frame = utils.put_text_on_image(frame, position=(10,50), text='FPS: {:.2f}'.format( fps_avg ))
 
-        cv2.imshow('frame', frame)
-        k = cv2.waitKey(1) & 0xFF#copied straight from another repo. not sure why they used 0xff. maybe to extract just the ascii bytes
-        if k == 27 or k == ord('q'):
-            break
+        # Skip display on headless systems (Raspberry Pi)
+        # cv2.imshow('frame', frame)
+        # k = cv2.waitKey(1) & 0xFF
+        # if k == 27 or k == ord('q'):
+        #     break
     cap.release()
-    cv2.destroyAllWindows()
+    # cv2.destroyAllWindows()
     if io is not None:
         io.stop_all()
 
