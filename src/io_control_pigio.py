@@ -2,10 +2,11 @@ import pigpio
 import time
 import subprocess
 import threading
+from config import *
 
 class PIDController:
     """Simple PID controller for smooth servo movement"""
-    def __init__(self, kp=2.0, ki=0.0, kd=0.5):
+    def __init__(self, kp=PID_KP, ki=PID_KI, kd=PID_KD):
         self.kp = kp
         self.ki = ki
         self.kd = kd
@@ -51,15 +52,7 @@ class PIDController:
         self.output = 0.0
 
 class IoControl:
-    defaultInc = 2
-    # Debouncing: Glitch filter time in microseconds (us)
-    DEBOUNCE_TIME_US = 10000
-    # PID constants (matching ESP32 defaults)
-    DEFAULT_KP = 2.0
-    DEFAULT_KI = 0.0
-    DEFAULT_KD = 0.5
-    # Sample time for PID updates (ms)
-    SAMPLE_TIME = 20
+    defaultInc = SERVO_INCREMENT
 
     def __init__(self):
         # --- Auto-start pigpiod if it's not running ---
@@ -77,9 +70,9 @@ class IoControl:
         # BOARD 11 → BCM 17
         # BOARD 13 → BCM 27
         # BOARD 37 → BCM 26
-        self.base_pin = 17
-        self.camera_pin = 27
-        self.switch_pin = 26
+        self.base_pin = GPIO_BASE_PIN
+        self.camera_pin = GPIO_CAMERA_PIN
+        self.switch_pin = GPIO_SWITCH_PIN
         self.resetToggled = False
         # Initialize pins
         self.pi.set_mode(self.base_pin, pigpio.OUTPUT)
@@ -87,13 +80,13 @@ class IoControl:
         self.pi.set_mode(self.switch_pin, pigpio.INPUT)
         self.pi.set_pull_up_down(self.switch_pin, pigpio.PUD_UP)
         #Apply Glitch Filter (Debounce)
-        self.pi.set_glitch_filter(self.switch_pin, self.DEBOUNCE_TIME_US)
+        self.pi.set_glitch_filter(self.switch_pin, GPIO_DEBOUNCE_TIME_US)
         # pigpio.EITHER_EDGE will trigger on both FALLING (0) and RISING (1) transitions
         self.cb = self.pi.callback(self.switch_pin, pigpio.EITHER_EDGE, self.switch_callback)
 
         # Initialize PID controllers
-        self.pan_pid = PIDController(self.DEFAULT_KP, self.DEFAULT_KI, self.DEFAULT_KD)
-        self.pitch_pid = PIDController(self.DEFAULT_KP, self.DEFAULT_KI, self.DEFAULT_KD)
+        self.pan_pid = PIDController(PID_KP, PID_KI, PID_KD)
+        self.pitch_pid = PIDController(PID_KP, PID_KI, PID_KD)
 
         # Initialize positions
         self.camera_angle = 135
@@ -101,7 +94,7 @@ class IoControl:
         print("[INFO] initializing servo position")
         self.center()
 
-        # Start PID update thread
+        # Start PID update thread - RE-ENABLED with proper tuning for ~30 FPS
         self.running = True
         self.pid_thread = threading.Thread(target=self._pid_loop, daemon=True)
         self.pid_thread.start()
@@ -143,19 +136,27 @@ class IoControl:
 
     def rotate_right(self, inc = defaultInc):
         """Set positive pan delta (object is to the right, move right)"""
-        self.pan_pid.set_input(inc)
+        # Direct servo control - bypass PID
+        self.base_angle = min(270, self.base_angle + inc)
+        self.set_servo_pulsewidth(self.base_pin, self.degrees_to_pulsewidth(self.base_angle))
 
     def rotate_left(self, inc = defaultInc):
         """Set negative pan delta (object is to the left, move left)"""
-        self.pan_pid.set_input(-inc)
+        # Direct servo control - bypass PID
+        self.base_angle = max(0, self.base_angle - inc)
+        self.set_servo_pulsewidth(self.base_pin, self.degrees_to_pulsewidth(self.base_angle))
 
     def rotate_up(self, inc = defaultInc):
         """Set negative pitch delta (object is up, move up)"""
-        self.pitch_pid.set_input(-inc)
+        # Direct servo control - bypass PID
+        self.camera_angle = max(0, self.camera_angle - inc)
+        self.set_servo_pulsewidth(self.camera_pin, self.degrees_to_pulsewidth(self.camera_angle))
 
     def rotate_down(self, inc = defaultInc):
         """Set positive pitch delta (object is down, move down)"""
-        self.pitch_pid.set_input(inc)
+        # Direct servo control - bypass PID
+        self.camera_angle = min(270, self.camera_angle + inc)
+        self.set_servo_pulsewidth(self.camera_pin, self.degrees_to_pulsewidth(self.camera_angle))
 
     def set_delta(self, pan_delta, pitch_delta):
         """Set both pan and pitch deltas directly (for PID control)"""
@@ -190,9 +191,13 @@ class IoControl:
             pan_degrees = 135 + self.pan_pid.output
             pitch_degrees = 135 + self.pitch_pid.output
 
-            # Clamp to valid range
-            pan_degrees = max(0, min(270, pan_degrees))
-            pitch_degrees = max(0, min(270, pitch_degrees))
+            # Clamp to valid range with software limits
+            pan_degrees = max(PAN_MIN, min(PAN_MAX, pan_degrees))
+            pitch_degrees = max(PITCH_MIN, min(PITCH_MAX, pitch_degrees))
+
+            # # Debug: print PID outputs
+            # print(f"PID: pan_input={self.pan_pid.input:.1f}, pan_output={self.pan_pid.output:.1f}, pan_degrees={pan_degrees:.1f}")
+            # print(f"PID: pitch_input={self.pitch_pid.input:.1f}, pitch_output={self.pitch_pid.output:.1f}, pitch_degrees={pitch_degrees:.1f}")
 
             # Update servos
             self.set_servo_pulsewidth(self.base_pin, self.degrees_to_pulsewidth(pan_degrees))
@@ -202,7 +207,7 @@ class IoControl:
             self.base_angle = pan_degrees
             self.camera_angle = pitch_degrees
 
-            time.sleep(self.SAMPLE_TIME / 1000.0)
+            time.sleep(PID_SAMPLE_TIME / 1000.0)
 
     def stop_all(self):
         self.running = False

@@ -43,27 +43,23 @@ def download_blazeface_model(force=False):
     """
     Download BlazeFace TFLite model
 
-    Note: For production use on Raspberry Pi 3, you should use:
-    1. The official MediaPipe BlazeFace TFLite model
-    2. OR convert to INT8 quantization using TensorFlow Lite Converter
-
-    This script provides a placeholder - users should obtain the model
-    from official MediaPipe sources.
+    Downloads the MediaPipe BlazeFace short-range model which has
+    simple, well-documented output format.
     """
     model_dir = create_model_directory()
-    model_path = os.path.join(model_dir, "blazeface_int8.tflite")
+    model_path = os.path.join(model_dir, "blazeface.tflite")
 
-    # STMicroelectronics INT8 quantized BlazeFace model
-    # This is a pre-quantized INT8 model optimized for embedded devices
-    # Source: https://github.com/STMicroelectronics/stm32ai-modelzoo
-    model_url = "https://github.com/STMicroelectronics/stm32ai-modelzoo/raw/refs/heads/main/face_detection/facedetect_front/Public_pretrainedmodel_public_dataset/widerface/blazeface_front_128/blazeface_front_128_int8.tflite"
+    # MediaPipe BlazeFace short-range model from Google Cloud Storage
+    # Source: https://storage.googleapis.com/mediapipe-models/
+    model_url = "https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite"
 
     print("=" * 60)
     print("BlazeFace Model Download for Raspberry Pi 3")
     print("=" * 60)
     print()
-    print("NOTE: This downloads the INT8 quantized BlazeFace model from STMicroelectronics.")
-    print("This model is optimized for embedded devices with 512 anchors.")
+    print("NOTE: This downloads the MediaPipe BlazeFace short-range model.")
+    print("This model is optimized for close-up faces (selfie-like).")
+    print("While not INT8 by default, it has simple output format.")
     print()
 
     if os.path.exists(model_path):
@@ -78,22 +74,21 @@ def download_blazeface_model(force=False):
                 return model_path
 
     success = download_file(model_url, model_path)
-    
+
     if success:
         print(f"[SUCCESS] Model downloaded to: {model_path}")
         print()
         print("Next steps:")
         print("1. Test the model: python src/main.py --raspi")
-        print("2. If performance is slow, consider INT8 quantization")
         print()
         return model_path
     else:
         print("[ERROR] Failed to download model")
         print()
         print("Alternative: Manual download")
-        print("1. Visit: https://github.com/STMicroelectronics/stm32ai-modelzoo")
-        print("2. Download BlazeFace INT8 model from face_detection/facedetect_front/")
-        print("3. Save as: model/blazeface_int8.tflite")
+        print("1. Visit: https://storage.googleapis.com/mediapipe-models/face_detector/")
+        print("2. Download blaze_face_short_range.tflite")
+        print("3. Save as: model/blazeface.tflite")
         return None
 
 def main():

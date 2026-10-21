@@ -62,8 +62,8 @@ app = Flask(__name__)
 
 cap = cv2.VideoCapture(0)
 
-# Use TFLite BlazeFace model (INT8 quantized from STMicroelectronics)
-file = "../model/blazeface_int8.tflite"
+# Use TFLite BlazeFace model (MediaPipe standard model)
+file = "../model/blazeface.tflite"
 
 # Check if model exists
 if not os.path.exists(file):

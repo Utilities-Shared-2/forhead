@@ -1,5 +1,5 @@
 # Modern TensorFlow Lite face detection using BlazeFace
-# Using STMicroelectronics INT8 quantized model (512 anchors)
+# Using standard MediaPipe BlazeFace model (896 anchors)
 # Optimized for Raspberry Pi 3
 
 import numpy as np
@@ -15,7 +15,7 @@ class FaceDetector:
                  input_size=(128, 128)):
         """
         Initialize TFLite BlazeFace detector
-        
+
         Args:
             model: Path to .tflite model file
             confidence_thr: Minimum confidence threshold for detections
@@ -25,15 +25,15 @@ class FaceDetector:
         self.confidence_thr = confidence_thr
         self.overlap_thr = overlap_thr
         self.input_size = input_size
-        
+
         # Load TFLite model
         self.interpreter = tflite.Interpreter(model_path=model, num_threads=4)
         self.interpreter.allocate_tensors()
-        
+
         # Get input and output details
         self.input_details = self.interpreter.get_input_details()
         self.output_details = self.interpreter.get_output_details()
-        
+
         print(f"[INFO] Model loaded: {model}")
         print(f"[INFO] Input shape: {self.input_details[0]['shape']}")
         print(f"[INFO] Output tensors: {len(self.output_details)}")
@@ -66,9 +66,12 @@ class FaceDetector:
         """
         Postprocess BlazeFace outputs
 
-        BlazeFace outputs (STMicro INT8 model):
-        - Output 0: Bounding boxes [1, 512, 16] - raw regressions
-        - Output 1: Confidence scores [1, 512, 1]
+        BlazeFace outputs (MediaPipe task model):
+        - Output 0: Bounding boxes [1, 896, 16] - anchor-encoded boxes
+        - Output 1: Confidence scores [1, 896, 1]
+
+        The box format has 16 values per box (y_center, x_center, h, w, + landmarks).
+        Values are in 128x128 input space, need sigmoid and scaling.
 
         Args:
             outputs: Model output tensors
@@ -78,55 +81,54 @@ class FaceDetector:
             bboxes: Array of [x_min, y_min, x_max, y_max]
             scores: Array of confidence scores
         """
-        boxes = outputs[0][0]  # [512, 16]
-        scores = outputs[1][0]  # [512, 1]
-        
+        boxes = outputs[0][0]  # [896, 16]
+        scores = outputs[1][0]  # [896, 1]
+
         # Apply sigmoid to confidence scores
         scores = 1 / (1 + np.exp(-scores))
-        
+
         # Filter by confidence threshold
         valid_indices = np.where(scores.flatten() > self.confidence_thr)[0]
-        
+
         if len(valid_indices) == 0:
             return [], []
-        
+
         valid_boxes = boxes[valid_indices]
         valid_scores = scores[valid_indices]
-        
-        # Decode BlazeFace boxes
-        # BlazeFace uses anchor-based encoding
-        # Simplified decoding: center_x, center_y, width, height
+
+        # Decode boxes
+        # Format: [y_center, x_center, height, width, ...landmarks]
+        # Values are in 128x128 input space, need sigmoid and scaling
         h, w = image_shape[:2]
         decoded_boxes = []
-        
+
         for i, box in enumerate(valid_boxes):
-            # Extract center coordinates and dimensions
-            # BlazeFace box format: [cx, cy, w, h, ...landmarks]
-            cx = box[0] * w
-            cy = box[1] * h
-            bw = box[2] * w
-            bh = box[3] * h
-            
-            # Convert to [x_min, y_min, x_max, y_max]
-            x_min = int(max(0, cx - bw / 2))
-            y_min = int(max(0, cy - bh / 2))
-            x_max = int(min(w, cx + bw / 2))
-            y_max = int(min(h, cy + bh / 2))
-            
+            # Apply sigmoid to first 4 values
+            y_center = 1 / (1 + np.exp(-box[0]))
+            x_center = 1 / (1 + np.exp(-box[1]))
+            box_h = 1 / (1 + np.exp(-box[2]))
+            box_w = 1 / (1 + np.exp(-box[3]))
+
+            # Convert to absolute coordinates (normalized to image size)
+            x_min = int(max(0, x_center * w - box_w * w / 2))
+            y_min = int(max(0, y_center * h - box_h * h / 2))
+            x_max = int(min(w, x_center * w + box_w * w / 2))
+            y_max = int(min(h, y_center * h + box_h * h / 2))
+
             decoded_boxes.append([x_min, y_min, x_max, y_max])
-        
+
         if len(decoded_boxes) == 0:
             return [], []
-        
+
         decoded_boxes = np.array(decoded_boxes)
-        
+
         # Apply NMS
         final_boxes, keep_indices = utils.non_max_suppression(
-            decoded_boxes, 
+            decoded_boxes,
             overlapThresh=self.overlap_thr
         )
         final_scores = valid_scores[keep_indices]
-        
+
         return final_boxes, final_scores
 
     def draw_bboxes(self, image, bboxes, color=(0, 255, 0)):

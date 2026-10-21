@@ -3,6 +3,8 @@ import time
 import argparse
 import sys
 import os
+import signal
+from config import *
 
 # Add src directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -15,7 +17,7 @@ from io_control_uart import IoControl as IoControlUart
 
 parser = argparse.ArgumentParser(description='Face tracking with servo control')
 parser.add_argument('--raspi', action='store_true', help='Set if running on Raspberry Pi (enables GPIO control via pigpio). If not set, uses UART to communicate with ESP32.')
-parser.add_argument('--uart-port', default='/dev/ttyUSB0', help='UART port for ESP32 communication (default: /dev/ttyUSB0)')
+parser.add_argument('--uart-port', default=UART_PORT, help=f'UART port for ESP32 communication (default: {UART_PORT})')
 parser.add_argument('--headless', action='store_true', help='Disable GUI display (useful for headless systems or when running via SSH without VNC)')
 args = parser.parse_args()
 
@@ -45,17 +47,33 @@ def center(midpoint, size):
     x_delta = x - x_mid
     y_delta = y - y_mid
 
-    # Send both deltas at once using set_delta (more efficient for PID control)
-    io.set_delta(x_delta, y_delta)
+    # Scale down deltas for PID controller (divide by 10)
+    # PID will smooth out the jitter
+    x_delta_scaled = x_delta / 10.0
+    y_delta_scaled = y_delta / 10.0
+
+    # Send both deltas at once using set_delta (PID control)
+    io.set_delta(x_delta_scaled, y_delta_scaled)
     print(f"delta: pan={x_delta}, pitch={y_delta}")
 
 def main():
     # cv2.namedWindow("preview")
 
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(CAMERA_INDEX)
 
-    # Use TFLite BlazeFace model (INT8 quantized from STMicroelectronics)
-    file = "../model/blazeface_int8.tflite"
+    # Signal handler for graceful shutdown
+    shutdown_requested = False
+
+    def signal_handler(sig, frame):
+        nonlocal shutdown_requested
+        print("\n[INFO] Graceful shutdown requested...")
+        shutdown_requested = True
+
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+
+    # Use TFLite BlazeFace model (MediaPipe standard model)
+    file = "../model/blazeface.tflite"
     
     # Check if model exists
     if not os.path.exists(file):
@@ -69,7 +87,7 @@ def main():
     fps_cum = 0.0
     # fps_avg = 0.0
 
-    while True:
+    while not shutdown_requested:
         if io is not None and args.raspi:
             io.read_switch()
         ret, frame=cap.read()
@@ -86,6 +104,10 @@ def main():
             fps_cum = 0
             n_frames = 0
 
+        # Print FPS every 30 frames
+        if n_frames % 30 == 0:
+            print(f"[FPS] Current: {fps:.1f}, Average: {fps_avg:.1f}")
+
         frame, rectangle = app.draw_largest_box(frame, bboxes, scores)
         #if the rectangle has nothing, this will be skipped
         if rectangle:
@@ -101,12 +123,17 @@ def main():
             cv2.imshow('frame', frame)
             k = cv2.waitKey(1) & 0xFF
             if k == 27 or k == ord('q'):
-                break
+                shutdown_requested = True
+
+    # Graceful shutdown
+    print("[INFO] Shutting down...")
+    if io is not None:
+        io.center()  # Return servos to center
+        io.stop_all()
     cap.release()
     if not args.headless:
         cv2.destroyAllWindows()
-    if io is not None:
-        io.stop_all()
+    print("[INFO] Shutdown complete")
 
 
 
