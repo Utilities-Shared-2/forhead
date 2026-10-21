@@ -13,7 +13,7 @@ from recognition import FaceDetector
 import utils
 import framebox as app
 from io_control_pigio import IoControl as IoControlPi
-from src.unused.io_control_uart import IoControl as IoControlUart
+from io_control_uart import IoControl as IoControlUart
 
 parser = argparse.ArgumentParser(description='Face tracking with servo control')
 parser.add_argument('--raspi', action='store_true', help='Set if running on Raspberry Pi (enables GPIO control via pigpio). If not set, uses UART to communicate with ESP32.')
