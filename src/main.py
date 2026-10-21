@@ -56,12 +56,14 @@ def center(midpoint, size):
     io.set_delta(x_delta_scaled, y_delta_scaled)
     print(f"delta: pan={x_delta}, pitch={y_delta}")
 
+# Signal handler for graceful shutdown
+shutdown_requested = False
 def signal_handler(sig, frame):
-    nonlocal shutdown_requested
     print("\n[INFO] Graceful shutdown requested...")
-    shutdown_requested = True
+    global shutdown_requested = True
 
 def main():
+    global shutdown_requested
     if not args.headless:
         cv2.namedWindow("preview")
 
@@ -69,8 +71,6 @@ def main():
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, CAMERA_WIDTH)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, CAMERA_HEIGHT)
 
-    # Signal handler for graceful shutdown
-    shutdown_requested = False
 
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
