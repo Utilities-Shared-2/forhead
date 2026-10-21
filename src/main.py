@@ -13,7 +13,7 @@ from recognition import FaceDetector
 import utils
 import framebox as app
 from io_control_pigio import IoControl as IoControlPi
-from io_control_uart import IoControl as IoControlUart
+from src.unused.io_control_uart import IoControl as IoControlUart
 
 parser = argparse.ArgumentParser(description='Face tracking with servo control')
 parser.add_argument('--raspi', action='store_true', help='Set if running on Raspberry Pi (enables GPIO control via pigpio). If not set, uses UART to communicate with ESP32.')
@@ -56,8 +56,14 @@ def center(midpoint, size):
     io.set_delta(x_delta_scaled, y_delta_scaled)
     print(f"delta: pan={x_delta}, pitch={y_delta}")
 
+def signal_handler(sig, frame):
+    nonlocal shutdown_requested
+    print("\n[INFO] Graceful shutdown requested...")
+    shutdown_requested = True
+
 def main():
-    # cv2.namedWindow("preview")
+    if not args.headless:
+        cv2.namedWindow("preview")
 
     cap = cv2.VideoCapture(CAMERA_INDEX)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, CAMERA_WIDTH)
@@ -65,11 +71,6 @@ def main():
 
     # Signal handler for graceful shutdown
     shutdown_requested = False
-
-    def signal_handler(sig, frame):
-        nonlocal shutdown_requested
-        print("\n[INFO] Graceful shutdown requested...")
-        shutdown_requested = True
 
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
@@ -92,7 +93,6 @@ def main():
     
     n_frames = 0
     fps_cum = 0.0
-    # fps_avg = 0.0
 
     while not shutdown_requested:
         if io is not None and args.raspi:
@@ -127,7 +127,7 @@ def main():
 
         # Display frame unless headless mode
         if not args.headless:
-            cv2.imshow('frame', frame)
+            cv2.imshow('preview', frame)
             k = cv2.waitKey(1) & 0xFF
             if k == 27 or k == ord('q'):
                 shutdown_requested = True
@@ -141,7 +141,6 @@ def main():
     if not args.headless:
         cv2.destroyAllWindows()
     print("[INFO] Shutdown complete")
-
 
 
 if __name__ == "__main__":

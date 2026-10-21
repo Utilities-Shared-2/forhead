@@ -66,19 +66,18 @@ class IoControl:
         if not self.pi.connected:
             raise IOError("[Warning] Could not connect to pigpiod. Make sure it’s running with: sudo pigpiod")
 
-        # GPIO pin numbers (BOARD → BCM conversion if needed)
-        # BOARD 11 → BCM 17
-        # BOARD 13 → BCM 27
-        # BOARD 37 → BCM 26
+        # Setup the pins
         self.base_pin = GPIO_BASE_PIN
         self.camera_pin = GPIO_CAMERA_PIN
         self.switch_pin = GPIO_SWITCH_PIN
         self.resetToggled = False
+
         # Initialize pins
         self.pi.set_mode(self.base_pin, pigpio.OUTPUT)
         self.pi.set_mode(self.camera_pin, pigpio.OUTPUT)
         self.pi.set_mode(self.switch_pin, pigpio.INPUT)
         self.pi.set_pull_up_down(self.switch_pin, pigpio.PUD_UP)
+
         #Apply Glitch Filter (Debounce)
         self.pi.set_glitch_filter(self.switch_pin, GPIO_DEBOUNCE_TIME_US)
         # pigpio.EITHER_EDGE will trigger on both FALLING (0) and RISING (1) transitions
@@ -94,7 +93,7 @@ class IoControl:
         print("[INFO] initializing servo position")
         self.center()
 
-        # Start PID update thread - RE-ENABLED with proper tuning for ~30 FPS
+        # Start PID update thread
         self.running = True
         self.pid_thread = threading.Thread(target=self._pid_loop, daemon=True)
         self.pid_thread.start()
@@ -126,37 +125,11 @@ class IoControl:
         # min pulse width(0.5 = 0 deg) + (degrees we want to get*(relation between pulsewidth and degrees)
         return SERVO_PULSE_MIN + degrees * ((SERVO_PULSE_MAX - SERVO_PULSE_MIN) / (SERVO_DEGREES_MAX - SERVO_DEGREES_MIN))
 
-
     def set_servo_pulsewidth(self, pin, pulsewidth):
         """
         Set the servo pulse width on the given pin.
         """
         self.pi.set_servo_pulsewidth(pin, pulsewidth)
-
-
-    def rotate_right(self, inc = defaultInc):
-        """Set positive pan delta (object is to the right, move right)"""
-        # Direct servo control - bypass PID
-        self.base_angle = min(PAN_MAX, self.base_angle + inc)
-        self.set_servo_pulsewidth(self.base_pin, self.degrees_to_pulsewidth(self.base_angle))
-
-    def rotate_left(self, inc = defaultInc):
-        """Set negative pan delta (object is to the left, move left)"""
-        # Direct servo control - bypass PID
-        self.base_angle = max(PAN_MIN, self.base_angle - inc)
-        self.set_servo_pulsewidth(self.base_pin, self.degrees_to_pulsewidth(self.base_angle))
-
-    def rotate_up(self, inc = defaultInc):
-        """Set negative pitch delta (object is up, move up)"""
-        # Direct servo control - bypass PID
-        self.camera_angle = max(PITCH_MIN, self.camera_angle - inc)
-        self.set_servo_pulsewidth(self.camera_pin, self.degrees_to_pulsewidth(self.camera_angle))
-
-    def rotate_down(self, inc = defaultInc):
-        """Set positive pitch delta (object is down, move down)"""
-        # Direct servo control - bypass PID
-        self.camera_angle = min(PITCH_MAX, self.camera_angle + inc)
-        self.set_servo_pulsewidth(self.camera_pin, self.degrees_to_pulsewidth(self.camera_angle))
 
     def set_delta(self, pan_delta, pitch_delta):
         """Set both pan and pitch deltas directly (for PID control)"""
@@ -194,10 +167,6 @@ class IoControl:
             # Clamp to valid range with software limits
             pan_degrees = max(PAN_MIN, min(PAN_MAX, pan_degrees))
             pitch_degrees = max(PITCH_MIN, min(PITCH_MAX, pitch_degrees))
-
-            # # Debug: print PID outputs
-            # print(f"PID: pan_input={self.pan_pid.input:.1f}, pan_output={self.pan_pid.output:.1f}, pan_degrees={pan_degrees:.1f}")
-            # print(f"PID: pitch_input={self.pitch_pid.input:.1f}, pitch_output={self.pitch_pid.output:.1f}, pitch_degrees={pitch_degrees:.1f}")
 
             # Update servos
             self.set_servo_pulsewidth(self.base_pin, self.degrees_to_pulsewidth(pan_degrees))

@@ -12,7 +12,10 @@ SERVO_DEGREES_MIN = 0      # Minimum servo angle in degrees
 SERVO_DEGREES_MAX = 270    # Maximum servo angle in degrees
 SERVO_CENTER = 135         # Center position in degrees
 
-# GPIO Pin assignments (BCM numbering)
+# GPIO pin assignments (BOARD → BCM conversion if needed)
+# BOARD 11 → BCM 17
+# BOARD 13 → BCM 27
+# BOARD 37 → BCM 26
 GPIO_BASE_PIN = 27         # Pan servo (base rotation)
 GPIO_CAMERA_PIN = 17        # Pitch servo (camera tilt)
 GPIO_SWITCH_PIN = 26        # Limit switch
