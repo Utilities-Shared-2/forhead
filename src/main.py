@@ -59,8 +59,9 @@ def center(midpoint, size):
 # Signal handler for graceful shutdown
 shutdown_requested = False
 def signal_handler(sig, frame):
+    global shutdown_requested
     print("\n[INFO] Graceful shutdown requested...")
-    global shutdown_requested = True
+    shutdown_requested = True
 
 def main():
     global shutdown_requested
