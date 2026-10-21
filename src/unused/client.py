@@ -8,7 +8,7 @@ import sys
 import os
 
 # Add src directory to path for imports
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+#sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from config import *
 from io_control_pigio import IoControl
