@@ -47,10 +47,10 @@ def center(midpoint, size):
     x_delta = x - x_mid
     y_delta = y - y_mid
 
-    # Scale down deltas for PID controller (divide by 10)
+    # Scale down deltas for PID controller (divide by DELTA_SCALE_FACTOR)
     # PID will smooth out the jitter
-    x_delta_scaled = x_delta / 10.0
-    y_delta_scaled = y_delta / 10.0
+    x_delta_scaled = x_delta / DELTA_SCALE_FACTOR
+    y_delta_scaled = y_delta / DELTA_SCALE_FACTOR
 
     # Send both deltas at once using set_delta (PID control)
     io.set_delta(x_delta_scaled, y_delta_scaled)
@@ -60,6 +60,8 @@ def main():
     # cv2.namedWindow("preview")
 
     cap = cv2.VideoCapture(CAMERA_INDEX)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, CAMERA_WIDTH)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, CAMERA_HEIGHT)
 
     # Signal handler for graceful shutdown
     shutdown_requested = False
@@ -73,7 +75,7 @@ def main():
     signal.signal(signal.SIGTERM, signal_handler)
 
     # Use TFLite BlazeFace model (MediaPipe standard model)
-    file = "../model/blazeface.tflite"
+    file = DETECTION_MODEL_PATH
     
     # Check if model exists
     if not os.path.exists(file):
@@ -81,7 +83,12 @@ def main():
         print("[INFO] Please run 'cd .. && python download_model.py' to download the model")
         sys.exit(1)
     
-    face = FaceDetector(model=file, confidence_thr=0.5, overlap_thr=0.7, input_size=(128, 128))
+    face = FaceDetector(
+        model=file,
+        confidence_thr=DETECTION_CONFIDENCE_THR,
+        overlap_thr=DETECTION_OVERLAP_THR,
+        input_size=DETECTION_INPUT_SIZE
+    )
     
     n_frames = 0
     fps_cum = 0.0
@@ -100,12 +107,12 @@ def main():
         fps = 1.0 / (end_time - start_time)
         fps_cum += fps
         fps_avg = fps_cum / n_frames
-        if fps_cum > 5000:
+        if fps_cum > FPS_CUMULATIVE_RESET:
             fps_cum = 0
             n_frames = 0
 
-        # Print FPS every 30 frames
-        if n_frames % 30 == 0:
+        # Print FPS every FPS_PRINT_INTERVAL frames
+        if n_frames % FPS_PRINT_INTERVAL == 0:
             print(f"[FPS] Current: {fps:.1f}, Average: {fps_avg:.1f}")
 
         frame, rectangle = app.draw_largest_box(frame, bboxes, scores)

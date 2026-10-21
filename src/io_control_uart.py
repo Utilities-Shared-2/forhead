@@ -1,13 +1,14 @@
 import serial
 import time
+from config import *
 
 class IoControl:
-    defaultInc = 2
+    defaultInc = SERVO_INCREMENT
 
-    def __init__(self, port='/dev/ttyUSB0', baudrate=115200):
+    def __init__(self, port=UART_PORT, baudrate=UART_BAUD_RATE):
         """
         Initialize UART communication with ESP32
-        Default port is /dev/ttyUSB0, can be changed to /dev/ttyACM0 or other
+        Default port is UART_PORT, can be changed to /dev/ttyACM0 or other
         ESP32 expects commands in format: pan_delta,pitch_delta
         where delta is pixels from center (negative = left/up, positive = right/down)
         """
@@ -20,6 +21,11 @@ class IoControl:
             self.center()
         except serial.SerialException as e:
             raise IOError(f"[ERROR] Could not open serial port {port}: {e}")
+
+    def center(self):
+        """Send center command (0, 0 deltas) to ESP32"""
+        self.set_delta(0, 0)
+        time.sleep(1)
 
     def set_delta(self, pan_delta, pitch_delta):
         """

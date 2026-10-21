@@ -89,8 +89,8 @@ class IoControl:
         self.pitch_pid = PIDController(PID_KP, PID_KI, PID_KD)
 
         # Initialize positions
-        self.camera_angle = 135
-        self.base_angle = 135
+        self.camera_angle = SERVO_CENTER
+        self.base_angle = SERVO_CENTER
         print("[INFO] initializing servo position")
         self.center()
 
@@ -120,11 +120,11 @@ class IoControl:
     @staticmethod
     def degrees_to_pulsewidth(degrees):
         """
-        Convert degrees (0–270) to pulse width (500–2500 µs)
+        Convert degrees (SERVO_DEGREES_MIN–SERVO_DEGREES_MAX) to pulse width (SERVO_PULSE_MIN–SERVO_PULSE_MAX µs)
         """
-        degrees = max(0, min(270, degrees))
+        degrees = max(SERVO_DEGREES_MIN, min(SERVO_DEGREES_MAX, degrees))
         # min pulse width(0.5 = 0 deg) + (degrees we want to get*(relation between pulsewidth and degrees)
-        return 500 + degrees * ((2500 - 500) / 270)
+        return SERVO_PULSE_MIN + degrees * ((SERVO_PULSE_MAX - SERVO_PULSE_MIN) / (SERVO_DEGREES_MAX - SERVO_DEGREES_MIN))
 
 
     def set_servo_pulsewidth(self, pin, pulsewidth):
@@ -137,25 +137,25 @@ class IoControl:
     def rotate_right(self, inc = defaultInc):
         """Set positive pan delta (object is to the right, move right)"""
         # Direct servo control - bypass PID
-        self.base_angle = min(270, self.base_angle + inc)
+        self.base_angle = min(PAN_MAX, self.base_angle + inc)
         self.set_servo_pulsewidth(self.base_pin, self.degrees_to_pulsewidth(self.base_angle))
 
     def rotate_left(self, inc = defaultInc):
         """Set negative pan delta (object is to the left, move left)"""
         # Direct servo control - bypass PID
-        self.base_angle = max(0, self.base_angle - inc)
+        self.base_angle = max(PAN_MIN, self.base_angle - inc)
         self.set_servo_pulsewidth(self.base_pin, self.degrees_to_pulsewidth(self.base_angle))
 
     def rotate_up(self, inc = defaultInc):
         """Set negative pitch delta (object is up, move up)"""
         # Direct servo control - bypass PID
-        self.camera_angle = max(0, self.camera_angle - inc)
+        self.camera_angle = max(PITCH_MIN, self.camera_angle - inc)
         self.set_servo_pulsewidth(self.camera_pin, self.degrees_to_pulsewidth(self.camera_angle))
 
     def rotate_down(self, inc = defaultInc):
         """Set positive pitch delta (object is down, move down)"""
         # Direct servo control - bypass PID
-        self.camera_angle = min(270, self.camera_angle + inc)
+        self.camera_angle = min(PITCH_MAX, self.camera_angle + inc)
         self.set_servo_pulsewidth(self.camera_pin, self.degrees_to_pulsewidth(self.camera_angle))
 
     def set_delta(self, pan_delta, pitch_delta):
@@ -188,8 +188,8 @@ class IoControl:
             self.pitch_pid.update()
 
             # Convert PID output to absolute degrees (0-270)
-            pan_degrees = 135 + self.pan_pid.output
-            pitch_degrees = 135 + self.pitch_pid.output
+            pan_degrees = SERVO_CENTER + self.pan_pid.output
+            pitch_degrees = SERVO_CENTER + self.pitch_pid.output
 
             # Clamp to valid range with software limits
             pan_degrees = max(PAN_MIN, min(PAN_MAX, pan_degrees))
@@ -225,10 +225,10 @@ class IoControl:
         self.pan_pid.set_input(0)
         self.pitch_pid.set_input(0)
 
-        self.camera_angle = 135
-        self.base_angle = 135
-        self.set_servo_pulsewidth(self.base_pin, self.degrees_to_pulsewidth(self.camera_angle))
-        self.set_servo_pulsewidth(self.camera_pin, self.degrees_to_pulsewidth(self.base_angle))
+        self.camera_angle = SERVO_CENTER
+        self.base_angle = SERVO_CENTER
+        self.set_servo_pulsewidth(self.base_pin, self.degrees_to_pulsewidth(self.base_angle))
+        self.set_servo_pulsewidth(self.camera_pin, self.degrees_to_pulsewidth(self.camera_angle))
         time.sleep(1)
 
     def read_switch(self):

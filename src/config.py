@@ -44,6 +44,7 @@ DETECTION_CONFIDENCE_THR = 0.5      # Minimum confidence threshold
 DETECTION_OVERLAP_THR = 0.7         # NMS overlap threshold
 DETECTION_INPUT_SIZE = (128, 128)   # Model input resolution
 DETECTION_MODEL_PATH = "../model/blazeface.tflite"
+DETECTION_NUM_THREADS = 4           # Number of threads for TFLite inference
 
 # ====================
 # Control Loop Settings
@@ -69,6 +70,13 @@ UART_BAUD_RATE = 115200
 # ====================
 SERVER_PORT = 50300
 SERVER_HOST = "0.0.0.0"
+
+# ====================
+# Client Settings
+# ====================
+CLIENT_JPEG_QUALITY = 80            # JPEG quality for frame upload (0-100)
+CLIENT_REQUEST_TIMEOUT = 5          # HTTP request timeout in seconds
+CLIENT_LOOP_DELAY = 0.05            # Delay between capture loops in seconds
 
 # ====================
 # Display Settings

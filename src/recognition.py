@@ -6,13 +6,21 @@ import numpy as np
 import cv2
 import tflite_runtime.interpreter as tflite
 import utils
+from config import (
+    DETECTION_MODEL_PATH,
+    DETECTION_CONFIDENCE_THR,
+    DETECTION_OVERLAP_THR,
+    DETECTION_INPUT_SIZE,
+    DETECTION_NUM_THREADS,
+)
 
 class FaceDetector:
     def __init__(self,
-                 model,
-                 confidence_thr=0.5,
-                 overlap_thr=0.7,
-                 input_size=(128, 128)):
+                 model=DETECTION_MODEL_PATH,
+                 confidence_thr=DETECTION_CONFIDENCE_THR,
+                 overlap_thr=DETECTION_OVERLAP_THR,
+                 input_size=DETECTION_INPUT_SIZE,
+                 num_threads=DETECTION_NUM_THREADS):
         """
         Initialize TFLite BlazeFace detector
 
@@ -21,13 +29,14 @@ class FaceDetector:
             confidence_thr: Minimum confidence threshold for detections
             overlap_thr: NMS overlap threshold
             input_size: Model input size (width, height) - BlazeFace uses 128x128
+            num_threads: Number of threads for TFLite inference
         """
         self.confidence_thr = confidence_thr
         self.overlap_thr = overlap_thr
         self.input_size = input_size
 
         # Load TFLite model
-        self.interpreter = tflite.Interpreter(model_path=model, num_threads=4)
+        self.interpreter = tflite.Interpreter(model_path=model, num_threads=num_threads)
         self.interpreter.allocate_tensors()
 
         # Get input and output details

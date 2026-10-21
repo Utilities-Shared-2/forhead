@@ -4,9 +4,16 @@
 import cv2
 import requests
 import time
+import sys
+import os
+
+# Add src directory to path for imports
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from config import *
 from io_control_pigio import IoControl
 
-SERVER = "http://192.168.1.100:50300/process"   # change to your server IP
+SERVER = f"http://192.168.1.100:{SERVER_PORT}/process"   # change to your server IP
 AUTH = {"Authorization": "Bearer my-secret-token"}  # optional
 
 io = IoControl()
@@ -41,15 +48,17 @@ CMD_MAP = {
     "stop":       stop,
 }
 
-def post_frame_and_get_commands(frame_bgr, timeout=5):
-    _, jpg = cv2.imencode('.jpg', frame_bgr, [int(cv2.IMWRITE_JPEG_QUALITY), 80])
+def post_frame_and_get_commands(frame_bgr, timeout=CLIENT_REQUEST_TIMEOUT):
+    _, jpg = cv2.imencode('.jpg', frame_bgr, [int(cv2.IMWRITE_JPEG_QUALITY), CLIENT_JPEG_QUALITY])
     files = {"image": ("frame.jpg", jpg.tobytes(), "image/jpeg")}
     resp = requests.post(SERVER, headers=AUTH, files=files, timeout=timeout)
     resp.raise_for_status()
     return resp.json()
 
-def main_loop(capture_index=0, loop_delay=0.05):
+def main_loop(capture_index=CAMERA_INDEX, loop_delay=CLIENT_LOOP_DELAY):
     cap = cv2.VideoCapture(capture_index)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, CAMERA_WIDTH)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, CAMERA_HEIGHT)
     if not cap.isOpened():
         print("Failed to open camera.")
         return
@@ -64,7 +73,7 @@ def main_loop(capture_index=0, loop_delay=0.05):
                 continue
 
             try:
-                payload = post_frame_and_get_commands(frame, timeout=5)
+                payload = post_frame_and_get_commands(frame, timeout=CLIENT_REQUEST_TIMEOUT)
             except Exception as e:
                 print("post error:", e)
                 time.sleep(0.2)

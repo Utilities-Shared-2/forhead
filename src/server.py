@@ -6,6 +6,7 @@ import os
 # Add src directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+from config import *
 from recognition import FaceDetector
 import utils
 import framebox as app
@@ -60,10 +61,12 @@ import uuid, datetime
 app = Flask(__name__)
 
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(CAMERA_INDEX)
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, CAMERA_WIDTH)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, CAMERA_HEIGHT)
 
 # Use TFLite BlazeFace model (MediaPipe standard model)
-file = "../model/blazeface.tflite"
+file = DETECTION_MODEL_PATH
 
 # Check if model exists
 if not os.path.exists(file):
@@ -71,7 +74,12 @@ if not os.path.exists(file):
     print("[INFO] Please run 'cd .. && python download_model.py' to download the model")
     sys.exit(1)
 
-face = FaceDetector(model=file, confidence_thr=0.5, overlap_thr=0.7, input_size=(128, 128))
+face = FaceDetector(
+    model=file,
+    confidence_thr=DETECTION_CONFIDENCE_THR,
+    overlap_thr=DETECTION_OVERLAP_THR,
+    input_size=DETECTION_INPUT_SIZE
+)
 
 n_frames = 0
 fps_cum = 0.0
@@ -93,6 +101,7 @@ server = Flask(__name__)
 
 @server.route("/process", methods=["POST"])
 def process():
+    global n_frames, fps_cum
     # Expect form file named 'image'
     if "image" not in request.files:
         return jsonify({"error": "no image"}), 400
@@ -119,7 +128,7 @@ def process():
     fps = 1.0 / (end_time - start_time)
     fps_cum += fps
     fps_avg = fps_cum / n_frames
-    if fps_cum > 5000:
+    if fps_cum > FPS_CUMULATIVE_RESET:
         fps_cum = 0
         n_frames = 0
 
@@ -155,5 +164,5 @@ def health():
 
 # if __name__ == "":
     # server_main()
-server.run(host="0.0.0.0", port=50300, use_reloader=False, debug=False)
+server.run(host=SERVER_HOST, port=SERVER_PORT, use_reloader=False, debug=False)
 
