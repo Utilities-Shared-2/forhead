@@ -37,7 +37,7 @@ if [ -d "venv" ]; then
     source venv/bin/activate
 elif [ -d ".venv" ]; then
     echo "[2/4] Activating existing virtual environment..."
-    source venv/bin/activate
+    source .venv/bin/activate
 elif [ -d "env" ]; then
     echo "[2/4] Activating existing virtual environment..."
     source env/bin/activate
