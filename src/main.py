@@ -53,7 +53,7 @@ def main():
 
     cap = cv2.VideoCapture(0)
 
-    # Use TFLite BlazeFace model (INT8 quantized for Raspberry Pi 3)
+    # Use TFLite BlazeFace model (INT8 quantized from STMicroelectronics)
     file = "model/blazeface_int8.tflite"
     
     # Check if model exists

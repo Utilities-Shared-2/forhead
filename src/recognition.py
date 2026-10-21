@@ -1,5 +1,6 @@
 # Modern TensorFlow Lite face detection using BlazeFace
-# Optimized for Raspberry Pi 3 with INT8 quantization
+# Using STMicroelectronics INT8 quantized model (512 anchors)
+# Optimized for Raspberry Pi 3
 
 import numpy as np
 import cv2
@@ -40,45 +41,45 @@ class FaceDetector:
     def preprocess(self, image):
         """
         Preprocess image for BlazeFace model
-        
+
         Args:
             image: BGR image (numpy array)
-            
+
         Returns:
             Preprocessed tensor ready for inference
         """
         # Convert BGR to RGB
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        
+
         # Resize to model input size
         image_resized = cv2.resize(image_rgb, self.input_size)
-        
-        # Normalize to [0, 1] and convert to float32
-        image_normalized = image_resized.astype(np.float32) / 255.0
-        
+
+        # Normalize to [-1, 1] and convert to float32 (STMicro model expects this range)
+        image_normalized = (image_resized.astype(np.float32) / 127.5) - 1.0
+
         # Add batch dimension
         input_tensor = np.expand_dims(image_normalized, axis=0)
-        
+
         return input_tensor
 
     def postprocess(self, outputs, image_shape):
         """
         Postprocess BlazeFace outputs
-        
-        BlazeFace outputs:
-        - Output 0: Bounding boxes [1, 896, 16] - raw regressions
-        - Output 1: Confidence scores [1, 896, 1]
-        
+
+        BlazeFace outputs (STMicro INT8 model):
+        - Output 0: Bounding boxes [1, 512, 16] - raw regressions
+        - Output 1: Confidence scores [1, 512, 1]
+
         Args:
             outputs: Model output tensors
             image_shape: Original image shape (height, width)
-            
+
         Returns:
             bboxes: Array of [x_min, y_min, x_max, y_max]
             scores: Array of confidence scores
         """
-        boxes = outputs[0][0]  # [896, 16]
-        scores = outputs[1][0]  # [896, 1]
+        boxes = outputs[0][0]  # [512, 16]
+        scores = outputs[1][0]  # [512, 1]
         
         # Apply sigmoid to confidence scores
         scores = 1 / (1 + np.exp(-scores))

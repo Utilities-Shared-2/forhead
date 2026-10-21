@@ -48,7 +48,7 @@ pip install -r requirements.txt
 python download_model.py
 ```
 
-This will download the BlazeFace TFLite model to `model/blazeface_int8.tflite`.
+This will download the BlazeFace TFLite model (INT8 quantized from STMicroelectronics) to `model/blazeface_int8.tflite`.
 
 ### 3. Run Face Tracking
 
@@ -126,37 +126,21 @@ forhead/
 │   ├── io_control_pigio.py  # Raspberry Pi GPIO control
 │   └── io_control_uart.py   # UART communication
 ├── model/
-│   └── blazeface_int8.tflite # Face detection model
+│   └── blazeface_int8.tflite # Face detection model (INT8 quantized, 512 anchors)
 ├── requirements.txt         # Python dependencies
 └── download_model.py        # Model download script
 ```
 
-## Advanced: INT8 Quantization
+## Model Details
 
-For maximum performance on Raspberry Pi 3, you can convert the BlazeFace model to INT8:
+The project uses the STMicroelectronics INT8 quantized BlazeFace model:
+- **Source**: STMicroelectronics AI Model Zoo
+- **Quantization**: INT8 (optimized for embedded devices)
+- **Anchors**: 512 (optimized for speed on resource-constrained hardware)
+- **Input**: 128x128 RGB image, normalized to [-1, 1]
+- **Size**: ~185 KB
 
-```python
-# Requires full TensorFlow (not runtime)
-import tensorflow as tf
-
-converter = tf.lite.TFLiteConverter.from_saved_model("path/to/saved_model")
-converter.optimizations = [tf.lite.Optimize.DEFAULT]
-converter.target_spec.supported_types = [tf.int8]
-converter.inference_input_type = tf.int8
-converter.inference_output_type = tf.int8
-
-# Representative dataset for calibration
-def representative_dataset():
-    for _ in range(100):
-        data = np.random.rand(1, 128, 128, 3).astype(np.float32)
-        yield [data]
-
-converter.representative_dataset = representative_dataset
-tflite_quant_model = converter.convert()
-
-with open('blazeface_int8.tflite', 'wb') as f:
-    f.write(tflite_quant_model)
-```
+This model is pre-quantized and ready for use on Raspberry Pi 3 without requiring TensorFlow conversion.
 
 ## Notes
 

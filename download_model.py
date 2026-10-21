@@ -8,6 +8,7 @@ for use with TensorFlow Lite Runtime on Raspberry Pi 3.
 
 import os
 import sys
+import argparse
 import urllib.request
 import hashlib
 
@@ -38,41 +39,44 @@ def create_model_directory():
         print(f"[INFO] Created directory: {model_dir}")
     return model_dir
 
-def download_blazeface_model():
+def download_blazeface_model(force=False):
     """
     Download BlazeFace TFLite model
-    
+
     Note: For production use on Raspberry Pi 3, you should use:
     1. The official MediaPipe BlazeFace TFLite model
     2. OR convert to INT8 quantization using TensorFlow Lite Converter
-    
+
     This script provides a placeholder - users should obtain the model
     from official MediaPipe sources.
     """
     model_dir = create_model_directory()
     model_path = os.path.join(model_dir, "blazeface_int8.tflite")
-    
-    # Official MediaPipe BlazeFace model URL from Google Storage
-    # This is the standard BlazeFace short-range model from MediaPipe
-    model_url = "https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite"
-    
+
+    # STMicroelectronics INT8 quantized BlazeFace model
+    # This is a pre-quantized INT8 model optimized for embedded devices
+    # Source: https://github.com/STMicroelectronics/stm32ai-modelzoo
+    model_url = "https://github.com/STMicroelectronics/stm32ai-modelzoo/raw/refs/heads/main/face_detection/facedetect_front/Public_pretrainedmodel_public_dataset/widerface/blazeface_front_128/blazeface_front_128_int8.tflite"
+
     print("=" * 60)
     print("BlazeFace Model Download for Raspberry Pi 3")
     print("=" * 60)
     print()
-    print("NOTE: This downloads the standard BlazeFace model.")
-    print("For optimal performance on Raspberry Pi 3, consider:")
-    print("1. Using INT8 quantized version (requires TensorFlow model conversion)")
-    print("2. Reducing input resolution if needed")
+    print("NOTE: This downloads the INT8 quantized BlazeFace model from STMicroelectronics.")
+    print("This model is optimized for embedded devices with 512 anchors.")
     print()
-    
+
     if os.path.exists(model_path):
         print(f"[INFO] Model already exists: {model_path}")
-        response = input("Do you want to re-download? (y/n): ")
-        if response.lower() != 'y':
-            print("[INFO] Using existing model")
-            return model_path
-    
+        if force:
+            print("[INFO] Force flag set, re-downloading...")
+            os.remove(model_path)
+        else:
+            response = input("Do you want to re-download? (y/n): ")
+            if response.lower() != 'y':
+                print("[INFO] Using existing model")
+                return model_path
+
     success = download_file(model_url, model_path)
     
     if success:
@@ -87,20 +91,24 @@ def download_blazeface_model():
         print("[ERROR] Failed to download model")
         print()
         print("Alternative: Manual download")
-        print("1. Visit: https://github.com/google/mediapipe")
-        print("2. Download BlazeFace TFLite model")
+        print("1. Visit: https://github.com/STMicroelectronics/stm32ai-modelzoo")
+        print("2. Download BlazeFace INT8 model from face_detection/facedetect_front/")
         print("3. Save as: model/blazeface_int8.tflite")
         return None
 
 def main():
     """Main function"""
+    parser = argparse.ArgumentParser(description="Download BlazeFace model for face tracking")
+    parser.add_argument("--force", action="store_true", help="Force re-download even if model exists")
+    args = parser.parse_args()
+
     print("=" * 60)
     print("BlazeFace Model Downloader")
     print("=" * 60)
     print()
-    
-    model_path = download_blazeface_model()
-    
+
+    model_path = download_blazeface_model(force=args.force)
+
     if model_path:
         print(f"[SUCCESS] Model ready at: {model_path}")
         print()

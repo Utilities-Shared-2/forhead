@@ -55,15 +55,7 @@ echo ""
 
 # Download model
 echo "[3/4] Downloading BlazeFace model..."
-python3 download_model.py
-
-echo ""
-
-# Create model directory if it doesn't exist
-if [ ! -d "model" ]; then
-    mkdir -p model
-    echo "[INFO] Created model directory"
-fi
+python download_model.py --force
 
 echo ""
 
