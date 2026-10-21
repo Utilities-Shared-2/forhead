@@ -94,7 +94,9 @@ class FaceDetector:
         scores = outputs[1][0]  # [896, 1]
 
         # Apply sigmoid to confidence scores
-        scores = 1 / (1 + np.exp(-scores))
+        scores = np.where(
+            scores >= 0, 1 / (1 + np.exp(-scores)), np.exp(scores) / (1 + np.exp(scores))
+        )
 
         # Filter by confidence threshold
         valid_indices = np.where(scores.flatten() > self.confidence_thr)[0]

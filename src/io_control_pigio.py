@@ -85,8 +85,8 @@ class IoControl:
         self.cb = self.pi.callback(self.switch_pin, pigpio.EITHER_EDGE, self.switch_callback)
 
         # Initialize PID controllers
-        self.pan_pid = PIDController(PID_KP, PID_KI, PID_KD)
-        self.pitch_pid = PIDController(PID_KP, PID_KI, PID_KD)
+        self.pan_pid = PIDController(PAN_KP, PAN_KI, PAN_KD)
+        self.pitch_pid = PIDController(PITCH_KP, PITCH_KI, PITCH_KD)
 
         # Initialize positions
         self.camera_angle = SERVO_CENTER

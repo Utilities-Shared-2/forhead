@@ -13,8 +13,8 @@ SERVO_DEGREES_MAX = 270    # Maximum servo angle in degrees
 SERVO_CENTER = 135         # Center position in degrees
 
 # GPIO Pin assignments (BCM numbering)
-GPIO_BASE_PIN = 17         # Pan servo (base rotation)
-GPIO_CAMERA_PIN = 27        # Pitch servo (camera tilt)
+GPIO_BASE_PIN = 27         # Pan servo (base rotation)
+GPIO_CAMERA_PIN = 17        # Pitch servo (camera tilt)
 GPIO_SWITCH_PIN = 26        # Limit switch
 GPIO_DEBOUNCE_TIME_US = 10000  # Glitch filter time in microseconds
 
@@ -32,10 +32,22 @@ PAN_MAX = 270              # Full range
 # PID Controller Settings
 # ====================
 # Proportional-Integral-Derivative controller gains
+# P - Current Size
+# I - Past History
+# D - Future Speed
+# Default Value
 PID_KP = 0.1               # Proportional gain
 PID_KI = 0.0               # Integral gain
 PID_KD = 0.05              # Derivative gain
 PID_SAMPLE_TIME = 30       # Sample time in milliseconds (match detection FPS)
+
+PITCH_KP = 0.25             # Proportional gain
+PITCH_KI = 0            # Integral gain
+PITCH_KD = 0.5            # Derivative gain
+
+PAN_KP = 0.35              # Proportional gain
+PAN_KI = 0              # Integral gain
+PAN_KD = 0.45            # Derivative gain
 
 # ====================
 # Face Detection Settings
