@@ -2,3 +2,5 @@
 .qodo
 .DS_Store
 .idea
+__pycache__
+/model
