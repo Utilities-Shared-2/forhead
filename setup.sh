@@ -27,6 +27,9 @@ if [ "$IS_RASPI" = true ]; then
     sudo apt install -y python3-pip python3-dev libopencv-dev python3-opencv pigpio
 else
     echo "[1/4] Skipping system dependencies (desktop mode)"
+    echo "[1/4] Checking desktop dependencies..."
+    # Desktop uses full tensorflow instead of tflite-runtime
+    echo "[INFO] Desktop mode: Using full tensorflow package"
 fi
 
 echo ""
@@ -49,7 +52,11 @@ fi
 
 # Install Python dependencies
 echo "Installing Python dependencies..."
+if [ "$IS_RASPI" = true ]; then
+    pip install -r requirements-pi.txt
+else
 pip install -r requirements.txt
+fi
 
 echo ""
 
