@@ -31,9 +31,25 @@ fi
 
 echo ""
 
+# Check for virtual environment
+if [ -d "venv" ]; then
+    echo "[2/4] Activating existing virtual environment..."
+    source venv/bin/activate
+elif [ -d ".venv" ]; then
+    echo "[2/4] Activating existing virtual environment..."
+    source .venv/bin/activate
+elif [ -d "env" ]; then
+    echo "[2/4] Activating existing virtual environment..."
+    source env/bin/activate
+else
+    echo "[2/4] Creating virtual environment..."
+    python3 -m venv venv
+    source venv/bin/activate
+fi
+
 # Install Python dependencies
-echo "[2/4] Installing Python dependencies..."
-pip3 install -r requirements.txt
+echo "Installing Python dependencies..."
+pip install -r requirements.txt
 
 echo ""
 
