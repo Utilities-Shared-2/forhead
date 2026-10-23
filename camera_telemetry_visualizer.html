@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera & Gimbal Telemetry Visualizer</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Custom Dark Theme Scrollbars & Transitions */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+        .glow-cyan {
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.15);
+        }
+        .glow-amber {
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.15);
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col">
+
+    <!-- Header Navigation -->
+    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="p-2 bg-cyan-500/10 rounded-lg border border-cyan-500/30 text-cyan-400">
+                    <i data-lucide="crosshair" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg text-slate-100 tracking-wide flex items-center gap-2">
+                        Gimbal & Camera Telemetry Analyzer
+                        <span class="text-xs font-normal px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800">v1.0</span>
+                    </h1>
+                    <p class="text-xs text-slate-400">Real-time Pan/Pitch motion log parsing & trajectory analysis</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <button id="loadSampleBtn" class="px-3 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg transition-all flex items-center gap-1.5">
+                    <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset Sample
+                </button>
+                <button id="clearBtn" class="px-3 py-1.5 text-xs font-medium bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 border border-rose-800/50 rounded-lg transition-all flex items-center gap-1.5">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Clear Data
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- Top Row: Raw Log Input & Quick Stats -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- Raw Log Textarea Panel -->
+            <div class="lg:col-span-5 bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between shadow-xl">
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <label for="logInput" class="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                            <i data-lucide="terminal" class="w-4 h-4 text-cyan-400"></i> Telemetry Log Input
+                        </label>
+                        <span id="lineCount" class="text-xs text-slate-500 font-mono">0 lines</span>
+                    </div>
+                    <textarea id="logInput" class="w-full h-56 bg-slate-950 text-slate-300 font-mono text-xs p-3 rounded-lg border border-slate-800 focus:outline-none focus:border-cyan-500 transition-colors resize-none leading-relaxed" placeholder="Paste your delta log here..."></textarea>
+                </div>
+                <div class="mt-3 flex items-center gap-3">
+                    <button id="processBtn" class="flex-1 py-2 px-4 bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold text-xs rounded-lg transition-all shadow-lg shadow-cyan-900/30 flex items-center justify-center gap-2">
+                        <i data-lucide="play" class="w-4 h-4 fill-slate-950"></i> Process & Update Graphs
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dashboard Summary Metrics -->
+            <div class="lg:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                
+                <!-- Card 1: Total Frames -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between hover:border-slate-700 transition-all">
+                    <div class="flex items-center justify-between text-slate-400">
+                        <span class="text-xs font-medium uppercase tracking-wider">Frames</span>
+                        <i data-lucide="layers" class="w-4 h-4 text-cyan-400"></i>
+                    </div>
+                    <div id="statTotalFrames" class="text-2xl font-bold text-slate-100 font-mono mt-2">0</div>
+                    <div class="text-[10px] text-slate-500 mt-1">Processed log steps</div>
+                </div>
+
+                <!-- Card 2: Cumulative Pan Range -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between hover:border-slate-700 transition-all">
+                    <div class="flex items-center justify-between text-slate-400">
+                        <span class="text-xs font-medium uppercase tracking-wider">Pan Bounds</span>
+                        <i data-lucide="compass" class="w-4 h-4 text-cyan-400"></i>
+                    </div>
+                    <div id="statPanRange" class="text-xl font-bold text-cyan-400 font-mono mt-2">0°</div>
+                    <div id="statPanSub" class="text-[10px] text-slate-500 mt-1">Min: 0° | Max: 0°</div>
+                </div>
+
+                <!-- Card 3: Cumulative Pitch Range -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between hover:border-slate-700 transition-all">
+                    <div class="flex items-center justify-between text-slate-400">
+                        <span class="text-xs font-medium uppercase tracking-wider">Pitch Bounds</span>
+                        <i data-lucide="move-vertical" class="w-4 h-4 text-amber-400"></i>
+                    </div>
+                    <div id="statPitchRange" class="text-xl font-bold text-amber-400 font-mono mt-2">0°</div>
+                    <div id="statPitchSub" class="text-[10px] text-slate-500 mt-1">Min: 0° | Max: 0°</div>
+                </div>
+
+                <!-- Card 4: Avg / Peak Delta Speed -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between hover:border-slate-700 transition-all">
+                    <div class="flex items-center justify-between text-slate-400">
+                        <span class="text-xs font-medium uppercase tracking-wider">Max Step Delta</span>
+                        <i data-lucide="zap" class="w-4 h-4 text-purple-400"></i>
+                    </div>
+                    <div id="statMaxDelta" class="text-xl font-bold text-purple-400 font-mono mt-2">0</div>
+                    <div id="statAvgDelta" class="text-[10px] text-slate-500 mt-1">Avg Δ Pan: 0 | Δ Pitch: 0</div>
+                </div>
+
+                <!-- Card 5: FPS Average -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between hover:border-slate-700 transition-all">
+                    <div class="flex items-center justify-between text-slate-400">
+                        <span class="text-xs font-medium uppercase tracking-wider">FPS Performance</span>
+                        <i data-lucide="activity" class="w-4 h-4 text-emerald-400"></i>
+                    </div>
+                    <div id="statFPS" class="text-xl font-bold text-emerald-400 font-mono mt-2">0.0</div>
+                    <div id="statFPSSub" class="text-[10px] text-slate-500 mt-1">Current: 0 | Avg: 0</div>
+                </div>
+
+                <!-- Card 6: Displacement Vector -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between hover:border-slate-700 transition-all">
+                    <div class="flex items-center justify-between text-slate-400">
+                        <span class="text-xs font-medium uppercase tracking-wider">Net Shift</span>
+                        <i data-lucide="navigation" class="w-4 h-4 text-indigo-400"></i>
+                    </div>
+                    <div id="statNetShift" class="text-xl font-bold text-indigo-400 font-mono mt-2">Δ(0, 0)</div>
+                    <div id="statTotalDistance" class="text-[10px] text-slate-500 mt-1">Total Travel: 0 units</div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Interactive 2D Canvas & Playback Control -->
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-xl">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-4 border-b border-slate-800 gap-3">
+                <div>
+                    <h2 class="text-sm font-semibold text-slate-200 uppercase tracking-wider flex items-center gap-2">
+                        <i data-lucide="radar" class="w-4 h-4 text-cyan-400"></i> Spatial Trajectory & Motion Canvas
+                    </h2>
+                    <p class="text-xs text-slate-400">2D Pan vs. Pitch path visualization with frame animation playback</p>
+                </div>
+                <!-- Playback controls -->
+                <div class="flex items-center space-x-2 bg-slate-950 p-1.5 rounded-lg border border-slate-800">
+                    <button id="playBtn" class="p-2 bg-cyan-600/20 hover:bg-cyan-600 text-cyan-400 hover:text-slate-950 rounded-md transition-all">
+                        <i data-lucide="play" id="playIcon" class="w-4 h-4"></i>
+                    </button>
+                    <button id="resetPlayBtn" class="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-md transition-all">
+                        <i data-lucide="square" class="w-4 h-4"></i>
+                    </button>
+                    <div class="flex items-center space-x-2 px-2 text-xs font-mono text-slate-400">
+                        <span>Frame:</span>
+                        <span id="frameCounter" class="text-cyan-400 font-bold w-12 text-center">0 / 0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                <!-- Visual Canvas -->
+                <div class="lg:col-span-8 relative flex items-center justify-center bg-slate-950 rounded-lg border border-slate-800 overflow-hidden p-2">
+                    <canvas id="trajectoryCanvas" class="w-full h-80 max-h-[380px] block cursor-crosshair"></canvas>
+                    <div class="absolute bottom-3 right-3 bg-slate-900/80 backdrop-blur px-2 py-1 rounded text-[10px] font-mono text-slate-400 border border-slate-800 pointer-events-none">
+                        Axis: Pan (X) / Pitch (Y)
+                    </div>
+                </div>
+                
+                <!-- Playback Scrubbing & Settings -->
+                <div class="lg:col-span-4 space-y-4">
+                    <div>
+                        <label for="frameScrubber" class="text-xs font-medium text-slate-300 mb-1 block">Timeline Scrubber</label>
+                        <input type="range" id="frameScrubber" min="0" max="0" value="0" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-500">
+                    </div>
+
+                    <div class="space-y-3 pt-2">
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-slate-400">Playback Speed</span>
+                            <select id="speedSelect" class="bg-slate-950 text-slate-300 border border-slate-800 rounded px-2 py-1 focus:outline-none text-xs font-mono">
+                                <option value="1">1x Speed</option>
+                                <option value="2" selected>2x Speed</option>
+                                <option value="5">5x Speed</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-slate-400">Display Path Mode</span>
+                            <select id="pathModeSelect" class="bg-slate-950 text-slate-300 border border-slate-800 rounded px-2 py-1 focus:outline-none text-xs font-mono">
+                                <option value="cumulative" selected>Cumulative Trajectory</option>
+                                <option value="relative">Raw Delta Vectors</option>
+                            </select>
+                        </div>
+                        <div class="p-3 bg-slate-950/60 rounded-lg border border-slate-800/80 text-xs space-y-1.5 font-mono">
+                            <div class="text-slate-400 text-[11px] font-bold">Current Frame Pointer:</div>
+                            <div class="text-cyan-400">Cumul. Pan: <span id="hoverPan">0</span>°</div>
+                            <div class="text-amber-400">Cumul. Pitch: <span id="hoverPitch">0</span>°</div>
+                            <div class="text-slate-300">Delta Step: <span id="hoverDelta">Δ0, Δ0</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grid of Detailed Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <!-- Chart 1: Integrated Cumulative Position -->
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-xl flex flex-col justify-between">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xs font-semibold text-slate-200 uppercase tracking-wider flex items-center gap-2">
+                        <i data-lucide="trending-up" class="w-4 h-4 text-cyan-400"></i> Integrated Angles over Time
+                    </h3>
+                    <span class="text-[10px] text-slate-400 font-mono">Cumulative degrees</span>
+                </div>
+                <div class="relative w-full h-64">
+                    <canvas id="cumulativeChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Chart 2: Per-frame Velocity / Deltas -->
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-xl flex flex-col justify-between">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xs font-semibold text-slate-200 uppercase tracking-wider flex items-center gap-2">
+                        <i data-lucide="bar-chart-3" class="w-4 h-4 text-purple-400"></i> Motion Deltas per Step
+                    </h3>
+                    <span class="text-[10px] text-slate-400 font-mono">Velocity intensity</span>
+                </div>
+                <div class="relative w-full h-64">
+                    <canvas id="deltaChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Chart 3: FPS Performance Timeline -->
+            <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-xl">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xs font-semibold text-slate-200 uppercase tracking-wider flex items-center gap-2">
+                        <i data-lucide="cpu" class="w-4 h-4 text-emerald-400"></i> Frame Rate (FPS) Performance Log
+                    </h3>
+                    <span class="text-[10px] text-slate-400 font-mono">Current vs. Average FPS</span>
+                </div>
+                <div class="relative w-full h-52">
+                    <canvas id="fpsChart"></canvas>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 bg-slate-900 py-4 mt-8 text-center text-xs text-slate-500">
+        Camera Telemetry Log Analyzer • Browser-side Processing • Modern Chart Engine
+    </footer>
+
+    <!-- Application Script Logic -->
+    <script>
+        // --- Default Telemetry Sample Dataset ---
+        const DEFAULT_SAMPLE_LOG = `delta: pan=159, pitch=7
+delta: pan=159, pitch=-5
+delta: pan=159, pitch=-9
+delta: pan=159, pitch=18
+delta: pan=159, pitch=8
+delta: pan=-72, pitch=25
+delta: pan=-144, pitch=34
+delta: pan=-145, pitch=-18
+delta: pan=-155, pitch=-89
+delta: pan=117, pitch=-104
+delta: pan=130, pitch=10
+delta: pan=155, pitch=51
+delta: pan=-160, pitch=-39
+delta: pan=84, pitch=99
+delta: pan=20, pitch=114
+delta: pan=136, pitch=73
+delta: pan=137, pitch=-4
+delta: pan=156, pitch=-51
+delta: pan=-117, pitch=-57
+delta: pan=84, pitch=95
+delta: pan=86, pitch=106
+delta: pan=143, pitch=27
+[FPS] Current: 30.8, Average: 28.8
+delta: pan=-115, pitch=-99
+delta: pan=-122, pitch=-4
+delta: pan=-153, pitch=-6
+delta: pan=130, pitch=-106
+delta: pan=-158, pitch=-104
+delta: pan=136, pitch=89
+delta: pan=4, pitch=-120
+delta: pan=-156, pitch=24
+delta: pan=-153, pitch=-9
+delta: pan=28, pitch=-107
+delta: pan=-97, pitch=-119
+delta: pan=-144, pitch=-18
+delta: pan=-56, pitch=-85
+delta: pan=-160, pitch=-2
+delta: pan=134, pitch=9
+delta: pan=-123, pitch=-95
+delta: pan=46, pitch=119
+delta: pan=-160, pitch=-91
+delta: pan=127, pitch=70
+delta: pan=-146, pitch=-90
+delta: pan=-139, pitch=-107
+delta: pan=-155, pitch=-96
+delta: pan=-46, pitch=114
+delta: pan=-159, pitch=-109
+delta: pan=-160, pitch=-65
+delta: pan=-152, pitch=-43
+delta: pan=-160, pitch=61
+[FPS] Current: 32.2, Average: 27.0
+delta: pan=125, pitch=78
+delta: pan=30, pitch=-71
+delta: pan=-156, pitch=-81
+delta: pan=50, pitch=-97
+delta: pan=64, pitch=-39
+delta: pan=-160, pitch=-51
+delta: pan=-62, pitch=73
+delta: pan=123, pitch=82
+delta: pan=-157, pitch=-14
+delta: pan=-117, pitch=-116
+delta: pan=-154, pitch=-5
+delta: pan=45, pitch=6
+delta: pan=112, pitch=-57
+delta: pan=-22, pitch=99
+delta: pan=59, pitch=50
+delta: pan=-125, pitch=-79
+delta: pan=-69, pitch=16
+delta: pan=-109, pitch=-98
+delta: pan=-109, pitch=102
+delta: pan=-22, pitch=-112
+delta: pan=-8, pitch=97
+delta: pan=-160, pitch=4
+delta: pan=119, pitch=-50
+delta: pan=44, pitch=13
+delta: pan=-160, pitch=5
+delta: pan=110, pitch=-103
+delta: pan=-45, pitch=-100
+delta: pan=-12, pitch=101
+delta: pan=-143, pitch=-38
+[FPS] Current: 28.2, Average: 26.0
+delta: pan=-58, pitch=-109
+delta: pan=98, pitch=81
+delta: pan=-100, pitch=-119
+delta: pan=-27, pitch=101
+delta: pan=-9, pitch=-46
+delta: pan=14, pitch=-111
+delta: pan=84, pitch=-117
+delta: pan=158, pitch=53
+delta: pan=159, pitch=30
+delta: pan=-147, pitch=83
+delta: pan=157, pitch=-29
+delta: pan=-64, pitch=82
+delta: pan=-63, pitch=-120
+delta: pan=144, pitch=112
+delta: pan=-107, pitch=-117
+delta: pan=-38, pitch=111
+delta: pan=-81, pitch=-117
+delta: pan=-94, pitch=-118
+delta: pan=78, pitch=105
+delta: pan=155, pitch=98
+delta: pan=-5, pitch=109
+delta: pan=89, pitch=103
+delta: pan=123, pitch=61
+[FPS] Current: 30.7, Average: 27.1
+delta: pan=-159, pitch=12
+delta: pan=-130, pitch=-29
+delta: pan=156, pitch=79
+delta: pan=-127, pitch=-68
+delta: pan=-10, pitch=-47
+delta: pan=-159, pitch=-57
+delta: pan=43, pitch=112
+delta: pan=-151, pitch=5
+delta: pan=85, pitch=10
+delta: pan=31, pitch=-108
+delta: pan=-82, pitch=113
+delta: pan=-130, pitch=-7
+delta: pan=-100, pitch=104
+delta: pan=3, pitch=42
+delta: pan=-143, pitch=-70
+delta: pan=-150, pitch=-81
+delta: pan=159, pitch=30
+delta: pan=128, pitch=80
+delta: pan=125, pitch=104
+delta: pan=37, pitch=100
+delta: pan=-48, pitch=-71
+delta: pan=-149, pitch=-84
+delta: pan=-156, pitch=-30
+delta: pan=147, pitch=83
+delta: pan=16, pitch=111
+delta: pan=-149, pitch=19
+delta: pan=-75, pitch=-10
+delta: pan=147, pitch=97
+delta: pan=121, pitch=-101
+[FPS] Current: 15.0, Average: 27.2
+delta: pan=-159, pitch=13
+delta: pan=159, pitch=-19
+delta: pan=-160, pitch=-65
+delta: pan=75, pitch=-51
+delta: pan=23, pitch=114
+delta: pan=-58, pitch=-116
+delta: pan=-66, pitch=119
+delta: pan=140, pitch=-23
+delta: pan=-147, pitch=-112
+delta: pan=-45, pitch=96
+delta: pan=-49, pitch=100
+delta: pan=111, pitch=20
+delta: pan=-58, pitch=88
+delta: pan=0, pitch=75
+delta: pan=-8, pitch=-104
+delta: pan=52, pitch=-91
+delta: pan=134, pitch=7
+delta: pan=78, pitch=-110
+delta: pan=132, pitch=-106
+delta: pan=147, pitch=70
+delta: pan=159, pitch=117
+[FPS] Current: 21.7, Average: 27.4
+[FPS] Current: 35.9, Average: 27.5
+delta: pan=90, pitch=-99
+delta: pan=56, pitch=-114
+delta: pan=26, pitch=-113
+delta: pan=126, pitch=60
+delta: pan=-57, pitch=66
+delta: pan=-150, pitch=7`;
+
+        // State variables
+        let parsedData = {
+            frames: [], // { frameIdx, panDelta, pitchDelta, panCum, pitchCum }
+            fpsLogs: []  // { frameIdx, currentFps, avgFps }
+        };
+
+        let currentPlaybackFrame = 0;
+        let isPlaying = false;
+        let playInterval = null;
+
+        // Chart Instances
+        let cumulativeChartInstance = null;
+        let deltaChartInstance = null;
+        let fpsChartInstance = null;
+
+        // Elements
+        const logInput = document.getElementById('logInput');
+        const processBtn = document.getElementById('processBtn');
+        const loadSampleBtn = document.getElementById('loadSampleBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const lineCount = document.getElementById('lineCount');
+        const frameScrubber = document.getElementById('frameScrubber');
+        const playBtn = document.getElementById('playBtn');
+        const resetPlayBtn = document.getElementById('resetPlayBtn');
+        const playIcon = document.getElementById('playIcon');
+        const frameCounter = document.getElementById('frameCounter');
+        const canvas = document.getElementById('trajectoryCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Canvas Resolution Setup
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * window.devicePixelRatio;
+            canvas.height = rect.height * window.devicePixelRatio;
+            drawTrajectoryCanvas();
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+
+        // --- Log Parsing Logic ---
+        function parseLogs(rawText) {
+            const lines = rawText.split('\n');
+            lineCount.textContent = `${lines.length} lines`;
+
+            const frames = [];
+            const fpsLogs = [];
+
+            let currentPanCum = 0;
+            let currentPitchCum = 0;
+            let frameIndex = 0;
+
+            const deltaRegex = /delta:\s*pan=\s*(-?\d+),\s*pitch=\s*(-?\d+)/i;
+            const fpsRegex = /\[FPS\]\s*Current:\s*([\d.]+),\s*Average:\s*([\d.]+)/i;
+
+            lines.forEach((line) => {
+                const trimmed = line.trim();
+                
+                // Match Delta Motion
+                const deltaMatch = trimmed.match(deltaRegex);
+                if (deltaMatch) {
+                    const panDelta = parseInt(deltaMatch[1], 10);
+                    const pitchDelta = parseInt(deltaMatch[2], 10);
+                    
+                    currentPanCum += panDelta;
+                    currentPitchCum += pitchDelta;
+                    frameIndex++;
+
+                    frames.push({
+                        frameIdx: frameIndex,
+                        panDelta,
+                        pitchDelta,
+                        panCum: currentPanCum,
+                        pitchCum: currentPitchCum
+                    });
+                    return;
+                }
+
+                // Match FPS
+                const fpsMatch = trimmed.match(fpsRegex);
+                if (fpsMatch) {
+                    fpsLogs.push({
+                        frameIdx: frameIndex, // tied to current frame index
+                        currentFps: parseFloat(fpsMatch[1]),
+                        avgFps: parseFloat(fpsMatch[2])
+                    });
+                }
+            });
+
+            return { frames, fpsLogs };
+        }
+
+        // --- UI Updates & Stats Calculation ---
+        function updateDashboardStats(data) {
+            const frames = data.frames;
+            const fps = data.fpsLogs;
+
+            document.getElementById('statTotalFrames').textContent = frames.length;
+
+            if (frames.length === 0) {
+                document.getElementById('statPanRange').textContent = "0°";
+                document.getElementById('statPitchRange').textContent = "0°";
+                document.getElementById('statMaxDelta').textContent = "0";
+                document.getElementById('statFPS').textContent = "0.0";
+                document.getElementById('statNetShift').textContent = "Δ(0, 0)";
+                return;
+            }
+
+            // Pan / Pitch Bounds
+            const panCums = frames.map(f => f.panCum);
+            const pitchCums = frames.map(f => f.pitchCum);
+            const minPan = Math.min(...panCums), maxPan = Math.max(...panCums);
+            const minPitch = Math.min(...pitchCums), maxPitch = Math.max(...pitchCums);
+
+            document.getElementById('statPanRange').textContent = `${maxPan - minPan}°`;
+            document.getElementById('statPanSub').textContent = `Min: ${minPan}° | Max: ${maxPan}°`;
+
+            document.getElementById('statPitchRange').textContent = `${maxPitch - minPitch}°`;
+            document.getElementById('statPitchSub').textContent = `Min: ${minPitch}° | Max: ${maxPitch}°`;
+
+            // Max & Avg Deltas
+            const panDeltas = frames.map(f => Math.abs(f.panDelta));
+            const pitchDeltas = frames.map(f => Math.abs(f.pitchDelta));
+            const maxDelta = Math.max(...panDeltas, ...pitchDeltas);
+            const avgPanDelta = (panDeltas.reduce((a, b) => a + b, 0) / frames.length).toFixed(1);
+            const avgPitchDelta = (pitchDeltas.reduce((a, b) => a + b, 0) / frames.length).toFixed(1);
+
+            document.getElementById('statMaxDelta').textContent = `±${maxDelta}`;
+            document.getElementById('statAvgDelta').textContent = `Avg Δ Pan: ${avgPanDelta} | Pitch: ${avgPitchDelta}`;
+
+            // FPS Stats
+            if (fps.length > 0) {
+                const latestFps = fps[fps.length - 1];
+                document.getElementById('statFPS').textContent = latestFps.currentFps.toFixed(1);
+                document.getElementById('statFPSSub').textContent = `Curr: ${latestFps.currentFps} | Avg: ${latestFps.avgFps}`;
+            } else {
+                document.getElementById('statFPS').textContent = "N/A";
+                document.getElementById('statFPSSub').textContent = "No FPS tags in log";
+            }
+
+            // Net Shift & Distance
+            const lastFrame = frames[frames.length - 1];
+            document.getElementById('statNetShift').textContent = `(${lastFrame.panCum}°, ${lastFrame.pitchCum}°)`;
+
+            let totalDist = 0;
+            for (let i = 0; i < frames.length; i++) {
+                totalDist += Math.sqrt(frames[i].panDelta ** 2 + frames[i].pitchDelta ** 2);
+            }
+            document.getElementById('statTotalDistance').textContent = `Total Travel: ${Math.round(totalDist)} units`;
+        }
+
+        // --- Chart Rendering ---
+        function renderCharts(data) {
+            const labels = data.frames.map(f => f.frameIdx);
+
+            // Chart 1: Cumulative Angle
+            if (cumulativeChartInstance) cumulativeChartInstance.destroy();
+            const ctxCum = document.getElementById('cumulativeChart').getContext('2d');
+            cumulativeChartInstance = new Chart(ctxCum, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Cumulative Pan (°)',
+                            data: data.frames.map(f => f.panCum),
+                            borderColor: '#06b6d4',
+                            backgroundColor: 'rgba(6, 182, 212, 0.08)',
+                            borderWidth: 2,
+                            tension: 0.2,
+                            fill: true,
+                            pointRadius: 0,
+                            pointHoverRadius: 4
+                        },
+                        {
+                            label: 'Cumulative Pitch (°)',
+                            data: data.frames.map(f => f.pitchCum),
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'rgba(245, 158, 11, 0.08)',
+                            borderWidth: 2,
+                            tension: 0.2,
+                            fill: true,
+                            pointRadius: 0,
+                            pointHoverRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { labels: { color: '#94a3b8', font: { size: 11 } } }
+                    },
+                    scales: {
+                        x: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } },
+                        y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } }
+                    }
+                }
+            });
+
+            // Chart 2: Step Deltas
+            if (deltaChartInstance) deltaChartInstance.destroy();
+            const ctxDelta = document.getElementById('deltaChart').getContext('2d');
+            deltaChartInstance = new Chart(ctxDelta, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Pan Delta',
+                            data: data.frames.map(f => f.panDelta),
+                            backgroundColor: 'rgba(6, 182, 212, 0.7)',
+                            borderRadius: 2
+                        },
+                        {
+                            label: 'Pitch Delta',
+                            data: data.frames.map(f => f.pitchDelta),
+                            backgroundColor: 'rgba(245, 158, 11, 0.7)',
+                            borderRadius: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { labels: { color: '#94a3b8', font: { size: 11 } } }
+                    },
+                    scales: {
+                        x: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } },
+                        y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } }
+                    }
+                }
+            });
+
+            // Chart 3: FPS Track
+            if (fpsChartInstance) fpsChartInstance.destroy();
+            const ctxFps = document.getElementById('fpsChart').getContext('2d');
+            
+            const fpsLabels = data.fpsLogs.map(f => `Frame ${f.frameIdx}`);
+            fpsChartInstance = new Chart(ctxFps, {
+                type: 'line',
+                data: {
+                    labels: fpsLabels,
+                    datasets: [
+                        {
+                            label: 'Current FPS',
+                            data: data.fpsLogs.map(f => f.currentFps),
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            fill: true,
+                            pointRadius: 3
+                        },
+                        {
+                            label: 'Average FPS',
+                            data: data.fpsLogs.map(f => f.avgFps),
+                            borderColor: '#3b82f6',
+                            borderDash: [4, 4],
+                            borderWidth: 1.5,
+                            pointRadius: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { labels: { color: '#94a3b8', font: { size: 11 } } }
+                    },
+                    scales: {
+                        x: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } },
+                        y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' }, min: 0 }
+                    }
+                }
+            });
+        }
+
+        // --- 2D Radar Canvas Visualization ---
+        function drawTrajectoryCanvas() {
+            const width = canvas.width;
+            const height = canvas.height;
+            ctx.clearRect(0, 0, width, height);
+
+            const frames = parsedData.frames;
+            if (!frames || frames.length === 0) return;
+
+            const mode = document.getElementById('pathModeSelect').value;
+
+            // Draw Background Grid Lines
+            ctx.strokeStyle = '#1e293b';
+            ctx.lineWidth = 1;
+
+            const gridSteps = 8;
+            for (let i = 1; i < gridSteps; i++) {
+                ctx.beginPath();
+                ctx.moveTo((width / gridSteps) * i, 0);
+                ctx.lineTo((width / gridSteps) * i, height);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(0, (height / gridSteps) * i);
+                ctx.lineTo(width, (height / gridSteps) * i);
+                ctx.stroke();
+            }
+
+            // Draw Center Axis Crosshair
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(width / 2, 0); ctx.lineTo(width / 2, height);
+            ctx.moveTo(0, height / 2); ctx.lineTo(width, height / 2);
+            ctx.stroke();
+
+            // Calculate Bounding Box for Normalization
+            let xVals = [], yVals = [];
+            if (mode === 'cumulative') {
+                xVals = frames.map(f => f.panCum);
+                yVals = frames.map(f => f.pitchCum);
+            } else {
+                xVals = frames.map(f => f.panDelta);
+                yVals = frames.map(f => f.pitchDelta);
+            }
+
+            const minX = Math.min(...xVals), maxX = Math.max(...xVals);
+            const minY = Math.min(...yVals), maxY = Math.max(...yVals);
+
+            const rangeX = Math.max(Math.abs(minX), Math.abs(maxX), 10) * 2.2;
+            const rangeY = Math.max(Math.abs(minY), Math.abs(maxY), 10) * 2.2;
+
+            function mapToCanvas(x, y) {
+                // Map X (Pan) to width, Y (Pitch) inverted to height
+                const cx = width / 2 + (x / rangeX) * width;
+                const cy = height / 2 - (y / rangeY) * height; // invert Y for screen coords
+                return { x: cx, y: cy };
+            }
+
+            const limit = Math.min(currentPlaybackFrame, frames.length - 1);
+
+            // Draw Full Motion Path Line
+            if (limit > 0) {
+                ctx.beginPath();
+                ctx.strokeStyle = 'rgba(6, 182, 212, 0.6)';
+                ctx.lineWidth = 2 * window.devicePixelRatio;
+
+                for (let i = 0; i <= limit; i++) {
+                    const xVal = mode === 'cumulative' ? frames[i].panCum : frames[i].panDelta;
+                    const yVal = mode === 'cumulative' ? frames[i].pitchCum : frames[i].pitchDelta;
+                    const pt = mapToCanvas(xVal, yVal);
+
+                    if (i === 0) ctx.moveTo(pt.x, pt.y);
+                    else ctx.lineTo(pt.x, pt.y);
+                }
+                ctx.stroke();
+            }
+
+            // Draw Trajectory Point Dots
+            for (let i = 0; i <= limit; i++) {
+                const xVal = mode === 'cumulative' ? frames[i].panCum : frames[i].panDelta;
+                const yVal = mode === 'cumulative' ? frames[i].pitchCum : frames[i].pitchDelta;
+                const pt = mapToCanvas(xVal, yVal);
+
+                ctx.beginPath();
+                ctx.arc(pt.x, pt.y, (i === limit ? 5 : 2) * window.devicePixelRatio, 0, Math.PI * 2);
+                ctx.fillStyle = i === limit ? '#f59e0b' : 'rgba(6, 182, 212, 0.4)';
+                ctx.fill();
+
+                if (i === limit) {
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 2 * window.devicePixelRatio;
+                    ctx.stroke();
+                }
+            }
+
+            // Update Current Pointer Info in UI
+            if (frames[limit]) {
+                const current = frames[limit];
+                document.getElementById('hoverPan').textContent = current.panCum;
+                document.getElementById('hoverPitch').textContent = current.pitchCum;
+                document.getElementById('hoverDelta').textContent = `Δ${current.panDelta}, Δ${current.pitchDelta}`;
+            }
+        }
+
+        // --- Playback Controls ---
+        function setPlaybackFrame(frameIdx) {
+            currentPlaybackFrame = frameIdx;
+            frameScrubber.value = frameIdx;
+            frameCounter.textContent = `${frameIdx} / ${parsedData.frames.length - 1}`;
+            drawTrajectoryCanvas();
+        }
+
+        function togglePlay() {
+            isPlaying = !isPlaying;
+            if (isPlaying) {
+                playIcon.setAttribute('data-lucide', 'pause');
+                lucide.createIcons();
+
+                const speed = parseInt(document.getElementById('speedSelect').value, 10);
+                const delay = Math.max(16, 100 / speed);
+
+                playInterval = setInterval(() => {
+                    if (currentPlaybackFrame >= parsedData.frames.length - 1) {
+                        currentPlaybackFrame = 0;
+                    } else {
+                        currentPlaybackFrame++;
+                    }
+                    setPlaybackFrame(currentPlaybackFrame);
+                }, delay);
+            } else {
+                playIcon.setAttribute('data-lucide', 'play');
+                lucide.createIcons();
+                clearInterval(playInterval);
+            }
+        }
+
+        function stopPlay() {
+            isPlaying = false;
+            clearInterval(playInterval);
+            playIcon.setAttribute('data-lucide', 'play');
+            lucide.createIcons();
+            setPlaybackFrame(0);
+        }
+
+        // --- Main Execution Handler ---
+        function executeParseAndUpdate() {
+            const text = logInput.value;
+            parsedData = parseLogs(text);
+
+            const total = parsedData.frames.length;
+            frameScrubber.max = total > 0 ? total - 1 : 0;
+            currentPlaybackFrame = 0;
+
+            updateDashboardStats(parsedData);
+            renderCharts(parsedData);
+            setPlaybackFrame(0);
+        }
+
+        // --- Event Listeners ---
+        processBtn.addEventListener('click', executeParseAndUpdate);
+
+        loadSampleBtn.addEventListener('click', () => {
+            logInput.value = DEFAULT_SAMPLE_LOG;
+            executeParseAndUpdate();
+        });
+
+        clearBtn.addEventListener('click', () => {
+            logInput.value = '';
+            executeParseAndUpdate();
+        });
+
+        frameScrubber.addEventListener('input', (e) => {
+            setPlaybackFrame(parseInt(e.target.value, 10));
+        });
+
+        playBtn.addEventListener('click', togglePlay);
+        resetPlayBtn.addEventListener('click', stopPlay);
+
+        document.getElementById('pathModeSelect').addEventListener('change', drawTrajectoryCanvas);
+        document.getElementById('speedSelect').addEventListener('change', () => {
+            if (isPlaying) {
+                togglePlay(); // Stop
+                togglePlay(); // Restart with new speed
+            }
+        });
+
+        // Initialize with default sample data on load
+        window.addEventListener('load', () => {
+            logInput.value = DEFAULT_SAMPLE_LOG;
+            resizeCanvas();
+            executeParseAndUpdate();
+        });
+    </script>
+</body>
+</html>
