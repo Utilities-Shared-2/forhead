@@ -61,8 +61,8 @@ class PIDController:
 # Initialize PID controllers for pan (x-axis) and tilt (y-axis)
 # kp: proportional gain, ki: integral gain, kd: derivative gain
 # These values may need tuning based on your specific servo characteristics
-pan_pid = PIDController(kp=0.2, ki=0, kd=0, output_limits=(-10, 10))
-tilt_pid = PIDController(kp=0.2, ki=0, kd=0, output_limits=(-5, 5))
+pan_pid = PIDController(kp=0.4, ki=0, kd=0, output_limits=(-5, 5))
+tilt_pid = PIDController(kp=0.1, ki=0, kd=0.9, output_limits=(-0.5, 0.5))
 
 #midpoint of the face box and the size of the frame
 def center(midpoint, size):

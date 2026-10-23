@@ -2,8 +2,8 @@ import pigpio
 import time
 import subprocess
 
-PITCH_MIN = 95             # 135 - 40 = 95 (40 degrees above horizontal)
-PITCH_MAX = 180            # 135 + 45 = 180 (45 degrees below horizontal)
+PITCH_MIN = 98             # 135 - 30 = 95 (40 degrees above horizontal)
+PITCH_MAX = 160            # 135 + 45 = 180 (45 degrees below horizontal)
 # Pan limits
 PAN_MIN = 0                # Full range
 PAN_MAX = 270              # Full range
