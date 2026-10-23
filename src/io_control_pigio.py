@@ -6,19 +6,19 @@ from config import *
 
 class PIDController:
     """PID controller using global constants with anti-windup & robust dt"""
-    def __init__(self, kp=PID_KP, ki=PID_KI, kd=PID_KD, output_limits=(-10, 10)):
+    def __init__(self, kp=PID_KP, ki=PID_KI, kd=PID_KD, output_limits=(-5, 5)):
         self.kp = kp
         self.ki = ki
         self.kd = kd
-        
+
         self.setpoint = 0.0
         self.input = 0.0
         self.output = 0.0
-        
+
         self.last_input = 0.0
         self.integral = 0.0
         self.last_time = time.time()
-        
+
         # Output limits in degrees (incremental movement per update)
         self.min_output, self.max_output = output_limits
         self.integral_limit = 50.0  # Prevents windup runaway
@@ -162,6 +162,10 @@ class IoControl:
         with self.new_input_lock:
             self.pan_pid.set_input(pan_delta)
             self.pitch_pid.set_input(pitch_delta)
+            # Reset integral when no face detected (zero input) to prevent drift
+            if pan_delta == 0 and pitch_delta == 0:
+                self.pan_pid.integral = 0.0
+                self.pitch_pid.integral = 0.0
             self.new_input_available.set()
 
     def get_base_angle(self):

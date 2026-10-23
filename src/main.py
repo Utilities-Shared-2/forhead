@@ -54,7 +54,7 @@ def center(midpoint, size):
 
     # Send both deltas at once using set_delta (PID control)
     io.set_delta(x_delta_scaled, y_delta_scaled)
-    print(f"delta: pan={x_delta}, pitch={y_delta}")
+    print(f"delta: pan={x_delta_scaled:.2f}, pitch={y_delta_scaled:.2f}")
 
 # Signal handler for graceful shutdown
 shutdown_requested = False
@@ -99,9 +99,14 @@ def main():
 
     while not shutdown_requested:
         loop_start = time.time()
+
         if io is not None and args.raspi:
             io.read_switch()
-        ret, frame=cap.read()
+
+        ret, frame = cap.read()
+        if not ret or frame is None:
+            print("[WARNING] Failed to read frame, retrying...")
+            continue
 
         start_time = time.perf_counter()
         bboxes, scores = face.inference(frame)
@@ -127,6 +132,10 @@ def main():
             midpoint = (int(midpoint[0]), int(midpoint[1]))
             frame = utils.put_text_on_image(frame, position=(10, 150), text=f"midpoint{midpoint}")
             center(midpoint, frame.shape[:2])
+        else:
+            # No face detected - stop servo movement by sending zero deltas
+            if io is not None:
+                io.set_delta(0, 0)
         frame = utils.put_text_on_image(frame, position=(10,50), text='FPS: {:.2f}'.format( fps_avg ))
 
         # Display frame unless headless mode
@@ -139,7 +148,8 @@ def main():
         # Maintain target FPS
         loop_elapsed = time.time() - loop_start
         if loop_elapsed < frame_time:
-            time.sleep(frame_time - loop_elapsed)
+            sleep_time = frame_time - loop_elapsed
+            time.sleep(sleep_time)
 
     # Graceful shutdown
     print("[INFO] Shutting down...")

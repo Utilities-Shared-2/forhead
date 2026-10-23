@@ -44,13 +44,13 @@ PID_KI = 0.0               # Integral gain
 PID_KD = 0.05              # Derivative gain
 PID_SAMPLE_TIME = 30       # Sample time in milliseconds (match detection FPS)
 
-PITCH_KP = 0.3             # Proportional gain
+PITCH_KP = 0.5             # Proportional gain
 PITCH_KI = 0.0            # Integral gain
-PITCH_KD = 0.1            # Derivative gain
+PITCH_KD = 0.05            # Derivative gain
 
-PAN_KP = 0.3              # Proportional gain
+PAN_KP = 0.5              # Proportional gain
 PAN_KI = 0.0              # Integral gain
-PAN_KD = 0.1            # Derivative gain
+PAN_KD = 0.05            # Derivative gain
 
 # ====================
 # Face Detection Settings
@@ -64,7 +64,7 @@ DETECTION_NUM_THREADS = 4           # Number of threads for TFLite inference
 # ====================
 # Control Loop Settings
 # ====================
-DELTA_SCALE_FACTOR = 50.0   # Scale pixel deltas for PID (divide by this value)
+DELTA_SCALE_FACTOR = 100.0   # Scale pixel deltas for PID (divide by this value)
 SERVO_INCREMENT = 2         # Default servo movement increment
 
 # ====================
