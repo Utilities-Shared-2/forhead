@@ -2,10 +2,23 @@ import pigpio
 import time
 import subprocess
 
+PITCH_MIN = 95             # 135 - 40 = 95 (40 degrees above horizontal)
+PITCH_MAX = 180            # 135 + 45 = 180 (45 degrees below horizontal)
+# Pan limits
+PAN_MIN = 0                # Full range
+PAN_MAX = 270              # Full range
+
 class IoControl:
     defaultInc = 2
     # Debouncing: Glitch filter time in microseconds (us)
     DEBOUNCE_TIME_US = 10000
+
+    # Pitch limits
+    PITCH_MIN = PITCH_MIN
+    PITCH_MAX = PITCH_MAX
+    # Pan limits
+    PAN_MIN = PAN_MIN
+    PAN_MAX = PAN_MAX
     def __init__(self):
         # --- Auto-start pigpiod if it's not running ---
         if not self._is_pigpiod_running():
@@ -77,28 +90,28 @@ class IoControl:
 
 
     def rotate_right(self, inc = defaultInc):
-        if self.base_angle <= 270:
-            self.set_servo_pulsewidth(self.base_pin, self.degrees_to_pulsewidth(self.base_angle + inc))
-            self.base_angle += inc
+        if self.base_angle < self.PAN_MAX:
+            self.base_angle = min(self.PAN_MAX, self.base_angle + inc)
+            self.set_servo_pulsewidth(self.base_pin, self.degrees_to_pulsewidth(self.base_angle))
         return
 
 
     def rotate_left(self, inc = defaultInc):
-        if self.base_angle >= 0:
-            self.set_servo_pulsewidth(self.base_pin, self.degrees_to_pulsewidth(self.base_angle - inc))
-            self.base_angle -= inc
+        if self.base_angle > self.PAN_MIN:
+            self.base_angle = max(self.PAN_MIN, self.base_angle - inc)
+            self.set_servo_pulsewidth(self.base_pin, self.degrees_to_pulsewidth(self.base_angle))
         return
 
     def rotate_up(self, inc = defaultInc):
-        if self.camera_angle <= 270:
-            self.set_servo_pulsewidth(self.camera_pin, self.degrees_to_pulsewidth(self.camera_angle + inc))
-            self.camera_angle += inc
+        if self.camera_angle < self.PITCH_MAX:
+            self.camera_angle = min(self.PITCH_MAX, self.camera_angle + inc)
+            self.set_servo_pulsewidth(self.camera_pin, self.degrees_to_pulsewidth(self.camera_angle))
         return
 
     def rotate_down(self, inc = defaultInc):
-        if self.camera_angle >= 0:
-            self.set_servo_pulsewidth(self.camera_pin, self.degrees_to_pulsewidth(self.camera_angle - inc))
-            self.camera_angle -= inc
+        if self.camera_angle > self.PITCH_MIN:
+            self.camera_angle = max(self.PITCH_MIN, self.camera_angle - inc)
+            self.set_servo_pulsewidth(self.camera_pin, self.degrees_to_pulsewidth(self.camera_angle))
         return
 
     def get_base_angle(self):
@@ -128,8 +141,8 @@ class IoControl:
     def center(self):
         self.camera_angle = 135
         self.base_angle = 135
-        self.set_servo_pulsewidth(self.base_pin, self.degrees_to_pulsewidth(self.camera_angle))
-        self.set_servo_pulsewidth(self.camera_pin, self.degrees_to_pulsewidth(self.base_angle))
+        self.set_servo_pulsewidth(self.base_pin, self.degrees_to_pulsewidth(self.base_angle))
+        self.set_servo_pulsewidth(self.camera_pin, self.degrees_to_pulsewidth(self.camera_angle))
         time.sleep(1)
 
     def read_switch(self):
