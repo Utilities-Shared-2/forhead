@@ -2,6 +2,7 @@ import cv2
 import time
 import signal
 import sys
+import argparse
 
 
 from recognition import FaceDetector
@@ -9,8 +10,9 @@ import utils
 import framebox as app
 from io_control_pigio import IoControl
 
-io = IoControl()
+io = None
 running = True
+args = None
 
 def signal_handler(signum, frame):
     """Handle shutdown signals gracefully."""
@@ -92,7 +94,13 @@ def center(midpoint, size):
             print(f"rotate down: {abs(tilt_output):.2f}")
 
 def main():
-    # cv2.namedWindow("preview")
+    global io, args
+    parser = argparse.ArgumentParser(description='Face tracking with servo control')
+    parser.add_argument('--headless', action='store_true', help='Run without displaying video feed')
+    args = parser.parse_args()
+
+    io = IoControl()
+
 
     cap = cv2.VideoCapture(0)
 
@@ -119,27 +127,35 @@ def main():
                 fps_cum = 0
                 n_frames = 0
 
+            # Process face detection regardless of headless mode
             frame, rectangle = app.draw_largest_box(frame, bboxes, scores)
             #if the rectangle has nothing, this will be skipped
             if rectangle:
                 (a,b),(c,d) = rectangle
                 midpoint = (a+(c-a)//2, b+(d-b)//2)
                 midpoint = (int(midpoint[0]), int(midpoint[1]))
-                frame = utils.put_text_on_image(frame, position=(10, 150), text=f"midpoint{midpoint}")
                 center(midpoint, frame.shape[:2])
-            frame = utils.put_text_on_image(frame, position=(10,50), text='FPS: {:.2f}'.format( fps_avg ))
 
-            cv2.imshow('frame', frame)
-            cv2.waitKey(1)
-            k = cv2.waitKey(1) & 0xFF#copied straight from another repo. not sure why they used 0xff. maybe to extract just the ascii bytes
-            if k == 27 or k == ord('q'):
-                break
+            if not args.headless:
+                if rectangle:
+                    frame = utils.put_text_on_image(frame, position=(10, 150), text=f"midpoint{midpoint}")
+                    frame = utils.put_text_on_image(frame, position=(10,50), text='FPS: {:.2f}'.format( fps_avg ))
+
+                cv2.imshow('frame', frame)
+                k = cv2.waitKey(1) & 0xFF#copied straight from another repo. not sure why they used 0xff. maybe to extract just the ascii bytes
+                if k == 27 or k == ord('q'):
+                    break
+            else:
+                # In headless mode, just a small delay to prevent CPU saturation
+                # Use Ctrl+C to exit (handled by signal handler)
+                time.sleep(0.001)
 
     # Cleanup resources
     print("[INFO] Releasing camera...")
     cap.release()
-    print("[INFO] Closing windows...")
-    cv2.destroyAllWindows()
+    if not args.headless:
+        print("[INFO] Closing windows...")
+        cv2.destroyAllWindows()
     print("[INFO] Stopping servos and GPIO...")
     io.stop_all()
     print("[INFO] Shutdown complete.")
