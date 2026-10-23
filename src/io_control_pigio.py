@@ -131,6 +131,13 @@ class IoControl:
         """
         self.pi.set_servo_pulsewidth(pin, pulsewidth)
 
+    def set_servo_degree(self,pin,degree):
+        """
+        Set the servo degree on the given pin.
+        """
+        pulsewidth = self.degrees_to_pulsewidth(degree)
+        self.set_servo_pulsewidth(pin, pulsewidth)
+
     def set_delta(self, pan_delta, pitch_delta):
         """Set both pan and pitch deltas directly (for PID control)"""
         self.pan_pid.set_input(pan_delta)

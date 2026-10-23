@@ -63,7 +63,22 @@ def signal_handler(sig, frame):
     print("\n[INFO] Graceful shutdown requested...")
     shutdown_requested = True
 
+def inital_movement():
+    if io is not None:
+        io.set_servo_degree(io.base_pin, 0)
+        time.sleep(2)
+        io.set_servo_degree(io.base_pin, 270)
+        time.sleep(2)
+        io.set_servo_degree(io.base_pin, 135)
+        time.sleep(1)
+        io.set_servo_degree(io.pitch_pin, 95)
+        time.sleep(2)
+        io.set_servo_degree(io.pitch_pin, 180)
+        time.sleep(2)
+
+
 def main():
+    inital_movement()
     global shutdown_requested
     if not args.headless:
         cv2.namedWindow("preview")
