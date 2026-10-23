@@ -213,8 +213,8 @@ class IoControl:
 
             # Debug output: show movement direction based on delta
             if self.debug:
-                pan_direction = "LEFT" if pan_output < 0 else "RIGHT" if pan_output > 0 else "NONE"
-                pitch_direction = "UP" if pitch_output < 0 else "DOWN" if pitch_output > 0 else "NONE"
+                pan_direction = "RIGHT" if pan_output < 0 else "LEFT" if pan_output > 0 else "NONE"
+                pitch_direction = "DOWN" if pitch_output < 0 else "UP" if pitch_output > 0 else "NONE"
                 print(f"[DEBUG] Pan delta: {pan_output:.2f}° -> {pan_direction}, Pitch delta: {pitch_output:.2f}° -> {pitch_direction}")
 
             # Update servos
