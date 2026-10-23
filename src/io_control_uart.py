@@ -39,7 +39,7 @@ class IoControl:
         # Debug output: show movement direction based on delta
         if self.debug:
             pan_direction = "LEFT" if pan_delta < 0 else "RIGHT" if pan_delta > 0 else "NONE"
-            pitch_direction = "DOWN" if pitch_delta < 0 else "UP" if pitch_delta > 0 else "NONE"
+            pitch_direction = "UP" if pitch_delta < 0 else "DOWN" if pitch_delta > 0 else "NONE"
             print(f"[DEBUG] Pan delta: {pan_delta:.2f} -> {pan_direction}, Pitch delta: {pitch_delta:.2f} -> {pitch_direction}")
         else:
             print(f"set delta: {command.strip()}")
