@@ -1,5 +1,7 @@
 import cv2
 import time
+import signal
+import sys
 
 
 from recognition import FaceDetector
@@ -8,6 +10,17 @@ import framebox as app
 from io_control_pigio import IoControl
 
 io = IoControl()
+running = True
+
+def signal_handler(signum, frame):
+    """Handle shutdown signals gracefully."""
+    global running
+    print("\n[INFO] Shutdown signal received, cleaning up...")
+    running = False
+
+# Register signal handlers for graceful shutdown
+signal.signal(signal.SIGINT, signal_handler)
+signal.signal(signal.SIGTERM, signal_handler)
 
 class PIDController:
     def __init__(self, kp, ki, kd, output_limits=None):
@@ -90,7 +103,7 @@ def main():
     fps_cum = 0.0
     # fps_avg = 0.0
 
-    while True:
+    while running:
         io.read_switch()
         if not io.resetToggled:
             ret, frame=cap.read()
@@ -121,9 +134,15 @@ def main():
             k = cv2.waitKey(1) & 0xFF#copied straight from another repo. not sure why they used 0xff. maybe to extract just the ascii bytes
             if k == 27 or k == ord('q'):
                 break
-    cv2.release()
+
+    # Cleanup resources
+    print("[INFO] Releasing camera...")
+    cap.release()
+    print("[INFO] Closing windows...")
     cv2.destroyAllWindows()
+    print("[INFO] Stopping servos and GPIO...")
     io.stop_all()
+    print("[INFO] Shutdown complete.")
 
 
 
