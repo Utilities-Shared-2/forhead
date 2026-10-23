@@ -1,6 +1,6 @@
 # forhead
 
-rasberry pi 3b powered facial tracking via active rotation
+rasberry pi 3 powered facial tracking via active rotation
 
 
 ## Authors
@@ -77,9 +77,8 @@ Activate the python script
     
 ## Trouble Shooting
 
-I would like to start this section by saying, this is a software as is, meaning we are not going to provide support to it, and only doing out of the kindness of our hearts. 
+I would like to start this section by saying, this is a software as is, meaning we are not going to provide support to it,
 if non of the trouble shoot is working
-
 I'd recommend Gemini, ChatGPT, or Perplexity/Comet, or any flavors of Ai
 
 ---
@@ -99,7 +98,7 @@ I'd recommend Gemini, ChatGPT, or Perplexity/Comet, or any flavors of Ai
 - if you are into learning more, seriously, consider GPT, googling will not help as much.
 
 ## Acknowledgements
-- This project would not have success without the vast online community, chat bot(yes, im serious), and our endurance to only use Ai for the last moments.
+- This project would not have success without the vast online community, chat bot(yes, im serious)
   
 -[pinout for rasPi](https://pinout.xyz/)
 
