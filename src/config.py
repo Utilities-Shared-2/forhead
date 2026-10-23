@@ -44,13 +44,13 @@ PID_KI = 0.0               # Integral gain
 PID_KD = 0.05              # Derivative gain
 PID_SAMPLE_TIME = 30       # Sample time in milliseconds (match detection FPS)
 
-PITCH_KP = 1             # Proportional gain
-PITCH_KI = 0            # Integral gain
-PITCH_KD = 1            # Derivative gain
+PITCH_KP = 0.3             # Proportional gain
+PITCH_KI = 0.0            # Integral gain
+PITCH_KD = 0.1            # Derivative gain
 
-PAN_KP = 1              # Proportional gain
-PAN_KI = 0              # Integral gain
-PAN_KD = 1            # Derivative gain
+PAN_KP = 0.3              # Proportional gain
+PAN_KI = 0.0              # Integral gain
+PAN_KD = 0.1            # Derivative gain
 
 # ====================
 # Face Detection Settings
@@ -64,7 +64,7 @@ DETECTION_NUM_THREADS = 4           # Number of threads for TFLite inference
 # ====================
 # Control Loop Settings
 # ====================
-DELTA_SCALE_FACTOR = 10.0   # Scale pixel deltas for PID (divide by this value)
+DELTA_SCALE_FACTOR = 50.0   # Scale pixel deltas for PID (divide by this value)
 SERVO_INCREMENT = 2         # Default servo movement increment
 
 # ====================
@@ -73,6 +73,7 @@ SERVO_INCREMENT = 2         # Default servo movement increment
 CAMERA_INDEX = 0            # OpenCV camera index
 CAMERA_WIDTH = 640          # Default capture width
 CAMERA_HEIGHT = 480         # Default capture height
+TARGET_FPS = 26             # Target FPS for the main loop
 
 # ====================
 # UART Settings (ESP32 fallback)

@@ -95,8 +95,10 @@ def main():
     
     n_frames = 0
     fps_cum = 0.0
+    frame_time = 1.0 / TARGET_FPS  # Target time per frame in seconds
 
     while not shutdown_requested:
+        loop_start = time.time()
         if io is not None and args.raspi:
             io.read_switch()
         ret, frame=cap.read()
@@ -133,6 +135,11 @@ def main():
             k = cv2.waitKey(1) & 0xFF
             if k == 27 or k == ord('q'):
                 shutdown_requested = True
+
+        # Maintain target FPS
+        loop_elapsed = time.time() - loop_start
+        if loop_elapsed < frame_time:
+            time.sleep(frame_time - loop_elapsed)
 
     # Graceful shutdown
     print("[INFO] Shutting down...")

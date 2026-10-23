@@ -6,7 +6,7 @@ from config import *
 
 class PIDController:
     """PID controller using global constants with anti-windup & robust dt"""
-    def __init__(self, kp=PID_KP, ki=PID_KI, kd=PID_KD, output_limits=(500, 2500)):
+    def __init__(self, kp=PID_KP, ki=PID_KI, kd=PID_KD, output_limits=(-10, 10)):
         self.kp = kp
         self.ki = ki
         self.kd = kd
@@ -19,9 +19,9 @@ class PIDController:
         self.integral = 0.0
         self.last_time = time.time()
         
-        # Safety limits (e.g., matching your servo's 500µs - 2500µs pulse width bounds)
+        # Output limits in degrees (incremental movement per update)
         self.min_output, self.max_output = output_limits
-        self.integral_limit = 500.0  # Prevents windup runaway
+        self.integral_limit = 50.0  # Prevents windup runaway
 
     def set_input(self, value):
         self.input = value
@@ -53,7 +53,7 @@ class PIDController:
         # Combined output
         output = P + I - D
 
-        # Clamp output to safe servo pulse width range
+        # Clamp output to incremental degree limits
         self.output = max(self.min_output, min(self.max_output, output))
 
         # Save state
@@ -108,6 +108,10 @@ class IoControl:
         print("[INFO] initializing servo position")
         self.center()
 
+        # Track when new input is available
+        self.new_input_available = threading.Event()
+        self.new_input_lock = threading.Lock()
+
         # Start PID update thread
         self.running = True
         self.pid_thread = threading.Thread(target=self._pid_loop, daemon=True)
@@ -155,8 +159,10 @@ class IoControl:
 
     def set_delta(self, pan_delta, pitch_delta):
         """Set both pan and pitch deltas directly (for PID control)"""
-        self.pan_pid.set_input(pan_delta)
-        self.pitch_pid.set_input(pitch_delta)
+        with self.new_input_lock:
+            self.pan_pid.set_input(pan_delta)
+            self.pitch_pid.set_input(pitch_delta)
+            self.new_input_available.set()
 
     def get_base_angle(self):
         return self.base_angle
@@ -177,14 +183,20 @@ class IoControl:
             self.resetToggled = False
 
     def _pid_loop(self):
-        """Background thread to update PID controllers at fixed rate"""
+        """Background thread to update PID controllers only when new input is available"""
         while self.running:
-            self.pan_pid.update()
-            self.pitch_pid.update()
+            # Wait for new input (with timeout to allow graceful shutdown)
+            self.new_input_available.wait(timeout=0.1)
+            self.new_input_available.clear()
 
-            # Convert PID output to absolute degrees (0-270)
-            pan_degrees = SERVO_CENTER + self.pan_pid.output
-            pitch_degrees = SERVO_CENTER + self.pitch_pid.output
+            with self.new_input_lock:
+                # Update PID controllers
+                pan_output = self.pan_pid.update()
+                pitch_output = self.pitch_pid.update()
+
+            # Apply incremental movement (PID output is delta in degrees)
+            pan_degrees = self.base_angle + pan_output
+            pitch_degrees = self.camera_angle + pitch_output
 
             # Clamp to valid range with software limits
             pan_degrees = max(PAN_MIN, min(PAN_MAX, pan_degrees))
@@ -197,8 +209,6 @@ class IoControl:
             # Update angle tracking
             self.base_angle = pan_degrees
             self.camera_angle = pitch_degrees
-
-            time.sleep(PID_SAMPLE_TIME / 1000.0)
 
     def stop_all(self):
         self.running = False
