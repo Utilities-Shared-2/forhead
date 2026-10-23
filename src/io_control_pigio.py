@@ -5,17 +5,23 @@ import threading
 from config import *
 
 class PIDController:
-    """Simple PID controller for smooth servo movement"""
-    def __init__(self, kp=PID_KP, ki=PID_KI, kd=PID_KD):
+    """PID controller using global constants with anti-windup & robust dt"""
+    def __init__(self, kp=PID_KP, ki=PID_KI, kd=PID_KD, output_limits=(500, 2500)):
         self.kp = kp
         self.ki = ki
         self.kd = kd
+        
         self.setpoint = 0.0
         self.input = 0.0
         self.output = 0.0
+        
         self.last_input = 0.0
         self.integral = 0.0
         self.last_time = time.time()
+        
+        # Safety limits (e.g., matching your servo's 500µs - 2500µs pulse width bounds)
+        self.min_output, self.max_output = output_limits
+        self.integral_limit = 500.0  # Prevents windup runaway
 
     def set_input(self, value):
         self.input = value
@@ -23,8 +29,11 @@ class PIDController:
     def update(self):
         current_time = time.time()
         dt = current_time - self.last_time
-        if dt == 0:
-            return
+        
+        # Guard against zero or negative dt (clock jitter)
+        if dt <= 0.0001:
+            return self.output
+
         self.last_time = current_time
 
         error = self.setpoint - self.input
@@ -32,24 +41,30 @@ class PIDController:
         # Proportional
         P = self.kp * error
 
-        # Integral
+        # Integral with anti-windup clamp
         self.integral += error * dt
+        self.integral = max(-self.integral_limit, min(self.integral_limit, self.integral))
         I = self.ki * self.integral
 
-        # Derivative
+        # Derivative on measurement (prevents sudden setpoint jolts)
         derivative = (self.input - self.last_input) / dt
         D = self.kd * derivative
 
-        # Calculate output
-        self.output = P + I - D
+        # Combined output
+        output = P + I - D
 
-        # Update state
+        # Clamp output to safe servo pulse width range
+        self.output = max(self.min_output, min(self.max_output, output))
+
+        # Save state
         self.last_input = self.input
+        return self.output
 
     def reset(self):
         self.integral = 0.0
         self.last_input = 0.0
         self.output = 0.0
+        self.last_time = time.time()
 
 class IoControl:
     defaultInc = SERVO_INCREMENT

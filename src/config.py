@@ -44,13 +44,13 @@ PID_KI = 0.0               # Integral gain
 PID_KD = 0.05              # Derivative gain
 PID_SAMPLE_TIME = 30       # Sample time in milliseconds (match detection FPS)
 
-PITCH_KP = 0.25             # Proportional gain
+PITCH_KP = 1             # Proportional gain
 PITCH_KI = 0            # Integral gain
-PITCH_KD = 0.5            # Derivative gain
+PITCH_KD = 1            # Derivative gain
 
-PAN_KP = 0.35              # Proportional gain
+PAN_KP = 1              # Proportional gain
 PAN_KI = 0              # Integral gain
-PAN_KD = 0.45            # Derivative gain
+PAN_KD = 1            # Derivative gain
 
 # ====================
 # Face Detection Settings
