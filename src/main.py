@@ -71,9 +71,11 @@ def inital_movement():
         time.sleep(2)
         io.set_servo_degree(io.base_pin, 135)
         time.sleep(1)
-        io.set_servo_degree(io.pitch_pin, 95)
+        io.set_servo_degree(io.camera_pin, 95)
         time.sleep(2)
-        io.set_servo_degree(io.pitch_pin, 180)
+        io.set_servo_degree(io.camera_pin, 180)
+        time.sleep(2)
+        io.set_servo_degree(io.camera_pin, 135)
         time.sleep(2)
 
 
