@@ -19,14 +19,15 @@ parser = argparse.ArgumentParser(description='Face tracking with servo control')
 parser.add_argument('--raspi', action='store_true', help='Set if running on Raspberry Pi (enables GPIO control via pigpio). If not set, uses UART to communicate with ESP32.')
 parser.add_argument('--uart-port', default=UART_PORT, help=f'UART port for ESP32 communication (default: {UART_PORT})')
 parser.add_argument('--headless', action='store_true', help='Disable GUI display (useful for headless systems or when running via SSH without VNC)')
+parser.add_argument('--debug', action='store_true', help='Enable debug output to show movement direction based on delta')
 args = parser.parse_args()
 
 if args.raspi:
-    io = IoControlPi()
+    io = IoControlPi(debug=args.debug)
     print("[INFO] Using Raspberry Pi GPIO control mode")
 else:
     try:
-        io = IoControlUart(port=args.uart_port)
+        io = IoControlUart(port=args.uart_port, debug=args.debug)
         print(f"[INFO] Using UART control mode on {args.uart_port}")
     except IOError as e:
         print(f"[ERROR] Failed to initialize UART: {e}")

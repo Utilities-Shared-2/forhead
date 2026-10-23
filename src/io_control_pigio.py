@@ -69,7 +69,8 @@ class PIDController:
 class IoControl:
     defaultInc = SERVO_INCREMENT
 
-    def __init__(self):
+    def __init__(self, debug=False):
+        self.debug = debug
         # --- Auto-start pigpiod if it's not running ---
         if not self._is_pigpiod_running():
             print("[INFO] pigpiod not detected, starting daemon...")
@@ -136,13 +137,17 @@ class IoControl:
             raise RuntimeError(f"Failed to start pigpiod: {e}")
 
     @staticmethod
-    def degrees_to_pulsewidth(degrees):
+    def degrees_to_pulsewidth(angle):
+        """Maps a 0-270 degree angle to 500-2500 microseconds.
+
+        - 0 deg -> 0.5 ms (500 µs) - 135 deg -> 1.5 ms (1500 µs) - 270 deg -> 2.5 ms
+        (2500 µs)
         """
-        Convert degrees (SERVO_DEGREES_MIN–SERVO_DEGREES_MAX) to pulse width (SERVO_PULSE_MIN–SERVO_PULSE_MAX µs)
-        """
-        degrees = max(SERVO_DEGREES_MIN, min(SERVO_DEGREES_MAX, degrees))
-        # min pulse width(0.5 = 0 deg) + (degrees we want to get*(relation between pulsewidth and degrees)
-        return SERVO_PULSE_MIN + degrees * ((SERVO_PULSE_MAX - SERVO_PULSE_MIN) / (SERVO_DEGREES_MAX - SERVO_DEGREES_MIN))
+        # Clamp angle between 0 and 270 degrees
+        angle = max(0.0, min(270.0, angle))
+        # Linear mapping formula
+        pulsewidth = 500 + (angle / 270.0) * 2000
+        return int(pulsewidth)
 
     def set_servo_pulsewidth(self, pin, pulsewidth):
         """
@@ -205,6 +210,12 @@ class IoControl:
             # Clamp to valid range with software limits
             pan_degrees = max(PAN_MIN, min(PAN_MAX, pan_degrees))
             pitch_degrees = max(PITCH_MIN, min(PITCH_MAX, pitch_degrees))
+
+            # Debug output: show movement direction based on delta
+            if self.debug:
+                pan_direction = "LEFT" if pan_output < 0 else "RIGHT" if pan_output > 0 else "NONE"
+                pitch_direction = "DOWN" if pitch_output < 0 else "UP" if pitch_output > 0 else "NONE"
+                print(f"[DEBUG] Pan delta: {pan_output:.2f}° -> {pan_direction}, Pitch delta: {pitch_output:.2f}° -> {pitch_direction}")
 
             # Update servos
             self.set_servo_pulsewidth(self.base_pin, self.degrees_to_pulsewidth(pan_degrees))
