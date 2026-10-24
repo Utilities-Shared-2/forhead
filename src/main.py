@@ -25,11 +25,13 @@ signal.signal(signal.SIGINT, signal_handler)
 signal.signal(signal.SIGTERM, signal_handler)
 
 class PIDController:
-    def __init__(self, kp, ki, kd, output_limits=None):
+    
+    def __init__(self, kp, ki, kd, MAX_PIXEL_ERROR, output_limits=1):
         self.kp = kp
         self.ki = ki
         self.kd = kd
         self.output_limits = output_limits
+        self.MAX_PIXEL_ERROR = MAX_PIXEL_ERROR
         self.reset()
 
     def reset(self):
@@ -41,19 +43,17 @@ class PIDController:
         current_time = time.time()
         dt = current_time - self._last_time
         if dt <= 0:
-            dt = 0.01
+            dt = 0.02
 
-        error = setpoint - measured_value
+        raw_error = setpoint - measured_value
+        normalized_error = max(-1.0, min(1.0, raw_error / self.MAX_PIXEL_ERROR))
+        self._integral += normalized_error * dt
+        derivative = (normalized_error - self._prev_error) / dt
 
-        self._integral += error * dt
-        derivative = (error - self._prev_error) / dt
-
-        output = (self.kp * error) + (self.ki * self._integral) + (self.kd * derivative)
-
-        if self.output_limits:
-            output = max(self.output_limits[0], min(self.output_limits[1], output))
-
-        self._prev_error = error
+        output = (self.kp * normalized_error) + (self.ki * self._integral) + (self.kd * derivative)
+        print(f"output:{output}")
+        output = output*self.output_limits
+        self._prev_error = normalized_error
         self._last_time = current_time
 
         return output
@@ -61,8 +61,8 @@ class PIDController:
 # Initialize PID controllers for pan (x-axis) and tilt (y-axis)
 # kp: proportional gain, ki: integral gain, kd: derivative gain
 # These values may need tuning based on your specific servo characteristics
-pan_pid = PIDController(kp=0.4, ki=0, kd=0, output_limits=(-5, 5))
-tilt_pid = PIDController(kp=0.1, ki=0, kd=0.9, output_limits=(-0.5, 0.5))
+pan_pid = PIDController(kp=0.7, ki=0, kd=0.2, MAX_PIXEL_ERROR=540, output_limits=15)
+tilt_pid = PIDController(kp=0.5, ki=0, kd=0.4, MAX_PIXEL_ERROR=320, output_limits=5)
 
 #midpoint of the face box and the size of the frame
 def center(midpoint, size):
@@ -71,27 +71,29 @@ def center(midpoint, size):
 
     x = midpoint[0]
     y = midpoint[1]
-
+    
+    # print(f"Center X delta: {x_mid - x}")
+    # print(f"Center Y delta: {y_mid - y}")
     # Calculate PID outputs for pan (x-axis) and tilt (y-axis)
     pan_output = pan_pid.compute(x_mid, x)
     tilt_output = tilt_pid.compute(y_mid, y)
 
     # Apply servo adjustments based on PID output
-    if abs(pan_output) > 0.1:
-        if pan_output > 0:
-            io.rotate_left(inc=abs(pan_output))
-            print(f"rotate left: {abs(pan_output):.2f}")
-        else:
-            io.rotate_right(inc=abs(pan_output))
-            print(f"rotate right: {pan_output:.2f}")
 
-    if abs(tilt_output) > 0.1:
-        if tilt_output > 0:
-            io.rotate_up(inc=abs(tilt_output))
-            print(f"rotate up: {tilt_output:.2f}")
-        else:
-            io.rotate_down(inc=abs(tilt_output))
-            print(f"rotate down: {abs(tilt_output):.2f}")
+    if pan_output > 0:
+        io.rotate_left(inc=abs(pan_output))
+        print(f"rotate left: {abs(pan_output):.2f}")
+    else:
+        io.rotate_right(inc=abs(pan_output))
+        print(f"rotate right: {pan_output:.2f}")
+
+
+    if tilt_output > 0:
+        io.rotate_up(inc=abs(tilt_output))
+        print(f"rotate up: {tilt_output:.2f}")
+    else:
+        io.rotate_down(inc=abs(tilt_output))
+        print(f"rotate down: {abs(tilt_output):.2f}")
 
 def main():
     global io, args
@@ -149,7 +151,7 @@ def main():
                 # In headless mode, just a small delay to prevent CPU saturation
                 # Use Ctrl+C to exit (handled by signal handler)
                 time.sleep(0.001)
-
+    io.center()
     # Cleanup resources
     print("[INFO] Releasing camera...")
     cap.release()
