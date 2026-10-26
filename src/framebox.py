@@ -3,6 +3,13 @@ import cv2
 
 
 def draw_largest_box(image, boxes, scores):
+    """
+    Draw the largest face box on the image.
+    :param image:
+    :param boxes:
+    :param scores:
+    :return: a tuple coordinates of the box ((x_min, y_min), (x_max, y_max))
+    """
     if len(boxes) == 0:
         return image, None
 

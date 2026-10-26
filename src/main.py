@@ -25,7 +25,6 @@ signal.signal(signal.SIGINT, signal_handler)
 signal.signal(signal.SIGTERM, signal_handler)
 
 class PIDController:
-    
     def __init__(self, kp, ki, kd, MAX_PIXEL_ERROR, output_limits=1):
         self.kp = kp
         self.ki = ki
@@ -40,13 +39,21 @@ class PIDController:
         self._last_time = time.time()
 
     def compute(self, setpoint, measured_value):
+        #Calculate time delta
         current_time = time.time()
         dt = current_time - self._last_time
         if dt <= 0:
             dt = 0.02
-
+        #Calculate error
         raw_error = setpoint - measured_value
+        #Normalize error
+        """
+        Note :
+        - We need to normalized because the error is delta in pixels, meaning each delta is on the magnitude few 100.
+        - we normalize by dividing the error with the half of the resolution in respect to the axis.
+        """
         normalized_error = max(-1.0, min(1.0, raw_error / self.MAX_PIXEL_ERROR))
+
         self._integral += normalized_error * dt
         derivative = (normalized_error - self._prev_error) / dt
 
@@ -66,6 +73,15 @@ tilt_pid = PIDController(kp=0.5, ki=0, kd=0.4, MAX_PIXEL_ERROR=320, output_limit
 
 #midpoint of the face box and the size of the frame
 def center(midpoint, size):
+    """
+    How it works:
+    - calculate the midpoint of the face box
+    - calculate the midpoint of the frame
+    - calculate the delta between the midpoint of the face box and the midpoint of the frame
+    - runs it to PIDController.compute() to get the change in degree needed for the robot
+    :param midpoint: array of the mid-point of the rectangle
+    :param size: pixel coordinate of the face box
+    """
     x_mid = size[1]//2
     y_mid = size[0]//2
 
@@ -79,14 +95,12 @@ def center(midpoint, size):
     tilt_output = tilt_pid.compute(y_mid, y)
 
     # Apply servo adjustments based on PID output
-
     if pan_output > 0:
         io.rotate_left(inc=abs(pan_output))
         print(f"rotate left: {abs(pan_output):.2f}")
     else:
         io.rotate_right(inc=abs(pan_output))
         print(f"rotate right: {pan_output:.2f}")
-
 
     if tilt_output > 0:
         io.rotate_up(inc=abs(tilt_output))
@@ -99,10 +113,13 @@ def main():
     global io, args
     parser = argparse.ArgumentParser(description='Face tracking with servo control')
     parser.add_argument('--headless', action='store_true', help='Run without displaying video feed')
+    parser.add_argument('--help', action='store_true', help='Show this list')
     args = parser.parse_args()
 
+    if args.help:
+        parser.print_help()
+        return
     io = IoControl()
-
 
     cap = cv2.VideoCapture(0)
 
@@ -134,7 +151,9 @@ def main():
             #if the rectangle has nothing, this will be skipped
             if rectangle:
                 (a,b),(c,d) = rectangle
+                #calculate the midpoint of the rectangle
                 midpoint = (a+(c-a)//2, b+(d-b)//2)
+                #creating the midpoint object
                 midpoint = (int(midpoint[0]), int(midpoint[1]))
                 center(midpoint, frame.shape[:2])
 
